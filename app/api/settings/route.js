@@ -5,26 +5,27 @@ import { dbStats, addActivity } from '@/lib/db';
 import { startScheduler } from '@/lib/scheduler';
 import { audit, diff } from '@/lib/audit';
 import { handle, json } from '@/lib/api';
+import { usingSupabase } from '@/lib/pg';
 
 export const dynamic = 'force-dynamic';
 
-const view = () => ({ settings: publicSettings(), db: dbStats() });
+const view = async () => ({ settings: publicSettings(), db: await dbStats(), runner: { cloud: !!process.env.VERCEL, shared: usingSupabase() } });
 
-export const GET = handle(async () => json(view()), { access: 'admin' });
+export const GET = handle(async () => json(await view()), { access: 'admin' });
 
 export const PUT = handle(async (req) => {
   const patch = await req.json().catch(() => ({}));
   const before = getSettings();
   let after;
   try {
-    after = saveSettings(patch);
+    after = await saveSettings(patch);
   } catch (e) {
     audit({ category: 'settings', action: 'settings.update', ok: false, summary: `Gagal menyimpan pengaturan: ${e.message}` });
     return json({ error: e.message }, 400);
   }
 
   const GROUPS = [
-    ['Aturan status & scan', ['tiers.urgent', 'tiers.reminder', 'tiers.needUpdate', 'tiers.warning', 'tiers.info', 'scanIntervalHours', 'scanConcurrency', 'scanTimeoutMs']],
+    ['Aturan status & scan', ['tiers.urgent', 'tiers.reminder', 'tiers.needUpdate', 'tiers.warning', 'tiers.info', 'scanIntervalHours', 'scanRunner', 'scanConcurrency', 'scanTimeoutMs']],
     ['Hak akses Monitoring', ['roles.monitoring']],
     ['Dashboard Monitoring', ['monitoring.renewalDays']],
     ['Proxy cek SSL', ['scanProxy.url', 'scanProxy.username', 'scanProxy.password']],
@@ -41,12 +42,12 @@ export const PUT = handle(async (req) => {
   }
 
   for (const [c, meta] of Object.entries(CHANNELS)) {
-    if (before.notify[c].enabled !== after.notify[c].enabled) addActivity('sync', `Notifikasi ${meta.label} ${after.notify[c].enabled ? 'diaktifkan' : 'dimatikan'}`, null);
+    if (before.notify[c].enabled !== after.notify[c].enabled) await addActivity('sync', `Notifikasi ${meta.label} ${after.notify[c].enabled ? 'diaktifkan' : 'dimatikan'}`, null);
   }
-  if (before.wazuh.enabled !== after.wazuh.enabled) addActivity('sync', `Kirim log ke Wazuh ${after.wazuh.enabled ? 'diaktifkan' : 'dimatikan'}`, null);
-  if (after.wazuh.enabled) { const { ensureTimer } = await import('@/lib/wazuh'); ensureTimer(); }
-  if (before.soarIn.enabled !== after.soarIn.enabled) addActivity('sync', `SOAR → aplikasi ${after.soarIn.enabled ? 'diaktifkan' : 'dimatikan'}`, null);
-  if (before.entra.enabled !== after.entra.enabled) addActivity('sync', `Login Microsoft Entra ID ${after.entra.enabled ? 'diaktifkan' : 'dimatikan'}`, null);
+  if (before.wazuh.enabled !== after.wazuh.enabled) await addActivity('sync', `Kirim log ke Wazuh ${after.wazuh.enabled ? 'diaktifkan' : 'dimatikan'}`, null);
+  if (after.wazuh.enabled && !process.env.VERCEL) { const { ensureTimer } = await import('@/lib/wazuh'); ensureTimer(); }
+  if (before.soarIn.enabled !== after.soarIn.enabled) await addActivity('sync', `SOAR → aplikasi ${after.soarIn.enabled ? 'diaktifkan' : 'dimatikan'}`, null);
+  if (before.entra.enabled !== after.entra.enabled) await addActivity('sync', `Login Microsoft Entra ID ${after.entra.enabled ? 'diaktifkan' : 'dimatikan'}`, null);
   startScheduler(); // terapkan interval scan baru
-  return json(view());
+  return json(await view());
 }, { access: 'admin' });

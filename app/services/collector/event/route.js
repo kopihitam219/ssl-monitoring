@@ -4,7 +4,7 @@ import { ingestDomains, soarAudit } from '@/lib/soar-in';
 import { soarHandler, readBody, reply } from '@/lib/soar-in-http';
 
 export const dynamic = 'force-dynamic';
-export const maxDuration = 300;
+export const maxDuration = 60; // batas Vercel (paket Hobby); scan panjang dilanjutkan otomatis
 
 export const POST = soarHandler(async (req, { ip }) => {
   const r = await ingestDomains(await readBody(req));

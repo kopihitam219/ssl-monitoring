@@ -8,7 +8,7 @@ export const dynamic = 'force-dynamic';
 export const POST = handle(async (req, { user }) => {
   const { current, next } = await req.json().catch(() => ({}));
   try {
-    changeOwnPassword(user.id, String(current || ''), String(next || ''));
+    await changeOwnPassword(user.id, String(current || ''), String(next || ''));
     audit({ category: 'auth', action: 'user.password', target: user.username, summary: 'Ganti password sendiri' });
     return json({ ok: true });
   } catch (e) {

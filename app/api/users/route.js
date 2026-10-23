@@ -7,7 +7,7 @@ import { handle, json } from '@/lib/api';
 export const dynamic = 'force-dynamic';
 
 export const GET = handle(async () => json({
-  users: listUsers(),
+  users: await listUsers(),
   permissions: PERMISSIONS,
   monitoringPermissions: getSettings().roles?.monitoring || [],
 }), { access: 'admin' });
@@ -15,7 +15,7 @@ export const GET = handle(async () => json({
 export const POST = handle(async (req, { user }) => {
   const body = await req.json().catch(() => ({}));
   try {
-    const u = createUser(body, user.username);
+    const u = await createUser(body, user.username);
     audit({ category: 'auth', action: 'user.add', target: u.username,
       summary: `Tambah user ${u.username} (${u.role})`,
       changes: [

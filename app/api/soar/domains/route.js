@@ -5,7 +5,7 @@ import { ingestDomains, queryDomains, soarAudit } from '@/lib/soar-in';
 import { soarHandler, readBody, reply } from '@/lib/soar-in-http';
 
 export const dynamic = 'force-dynamic';
-export const maxDuration = 300;
+export const maxDuration = 60; // batas Vercel (paket Hobby); scan panjang dilanjutkan otomatis
 
 export const POST = soarHandler(async (req, { ip }) => {
   const q = req.nextUrl.searchParams;
@@ -19,7 +19,7 @@ export const POST = soarHandler(async (req, { ip }) => {
 
 export const GET = soarHandler(async (req, { ip }) => {
   const q = Object.fromEntries(req.nextUrl.searchParams);
-  const r = queryDomains(q);
+  const r = await queryDomains(q);
   soarAudit({ action: 'soar.in.query', target: q.domain || q.status || q.group || 'semua domain', ip, summary: `SOAR menanyakan status sertifikat: ${r.total} domain` });
   return reply({ ok: true, ...r });
 });

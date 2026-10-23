@@ -9,11 +9,11 @@ export const dynamic = 'force-dynamic';
 
 export const POST = handle(async (req) => {
   const body = await req.json().catch(() => ({}));
-  const d = body.id ? getDomain(Number(body.id)) : null;
+  const d = body.id ? await getDomain(Number(body.id)) : null;
   if (body.id && !d) return json({ error: 'Domain tidak ditemukan' }, 404);
   try {
     const r = await testConnection(d ? d.domain : body.host, d ? d.port : body.port);
-    if (d) saveConnTest(d.id, r);
+    if (d) await saveConnTest(d.id, r);
     audit({ category: 'job', action: 'tools.conntest', target: `${r.host}:${r.port}`, summary: `Tes koneksi ${r.host}:${r.port}: ${r.conclusion.text}` });
     return json(r);
   } catch (e) {

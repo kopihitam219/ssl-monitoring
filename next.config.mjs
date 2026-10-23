@@ -1,7 +1,7 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  // dijalankan oleh Node.js langsung (bukan di-bundle) supaya node:sqlite aman
-  serverExternalPackages: ['xlsx'],
+  // dijalankan oleh Node.js langsung (tidak di-bundle)
+  serverExternalPackages: ['xlsx', 'postgres', '@electric-sql/pglite', 'nodemailer'],
   poweredByHeader: false,
 };
 

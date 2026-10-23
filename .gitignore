@@ -7,6 +7,7 @@ data/*.db
 data/*.db-*
 data/uploads/
 data/settings.json
+data/logs/
 
 # rahasia
 .env
@@ -17,4 +18,8 @@ data/settings.json
 Thumbs.db
 *.log
 
-data/logs/
+
+# database lokal (PGlite) & penanda impor data lama
+data/pg/
+data/legacy-imported*.json
+.vercel

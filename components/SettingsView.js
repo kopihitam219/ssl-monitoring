@@ -47,7 +47,8 @@ export default function SettingsView({ onChanged }) {
   const set = (k) => (e) => setForm({ ...form, [k]: e.target.value });
   const TIER_KEYS = ['urgent', 'reminder', 'needUpdate', 'warning', 'info'];
   const setTier = (k) => (e) => setForm({ ...form, tiers: { ...form.tiers, [k]: e.target.value } });
-  const dirtyRules = ['scanIntervalHours', 'scanConcurrency', 'scanTimeoutMs'].some((k) => String(form[k]) !== String(s[k]))
+  const shared = info.runner?.shared || info.runner?.cloud;
+  const dirtyRules = ['scanIntervalHours', 'scanRunner', 'scanConcurrency', 'scanTimeoutMs'].some((k) => String(form[k]) !== String(s[k]))
     || TIER_KEYS.some((k) => String(form.tiers[k]) !== String(s.tiers[k]))
     || String(form.monitoring?.renewalDays) !== String(s.monitoring?.renewalDays);
   if (integration) {
@@ -103,8 +104,20 @@ export default function SettingsView({ onChanged }) {
           <label className="field">
             <span>Scan otomatis tiap (jam)</span>
             <input type="number" min="0" max="168" value={form.scanIntervalHours} onChange={set('scanIntervalHours')} />
-            <small className="muted">0 = mati. Berjalan selama aplikasi terbuka.</small>
+            <small className="muted">0 = mati.{shared ? '' : ' Berjalan selama aplikasi terbuka.'}</small>
           </label>
+          {shared && (
+            <label className="field">
+              <span>Scan dijalankan oleh</span>
+              <select value={form.scanRunner} onChange={set('scanRunner')}>
+                <option value="cloud">Vercel (cloud) — cukup untuk domain publik</option>
+                <option value="local">Scanner kantor — domain internal &amp; proxy kantor</option>
+              </select>
+              <small className="muted">{form.scanRunner === 'local'
+                ? 'Jalankan aplikasi ini di laptop/server kantor dengan DATABASE_URL yang sama. Tombol scan di Vercel masuk antrean scanner kantor.'
+                : 'Scan otomatis lewat Vercel Cron. Domain internal / perlu proxy kantor tidak bisa dijangkau dari Vercel.'}</small>
+            </label>
+          )}
           <label className="field"><span>Domain dicek bersamaan</span><input type="number" min="1" max="50" value={form.scanConcurrency} onChange={set('scanConcurrency')} /></label>
           <label className="field"><span>Timeout per domain (ms)</span><input type="number" min="1000" max="60000" step="1000" value={form.scanTimeoutMs} onChange={set('scanTimeoutMs')} /></label>
           <label className="field">
@@ -116,7 +129,7 @@ export default function SettingsView({ onChanged }) {
         <p className="muted small"><CheckCircle2 size={13} className="h-icon" /> Perubahan ambang langsung berlaku untuk semua domain tanpa perlu scan ulang. Masalah kepercayaan sertifikat (nama tidak cocok, self-signed, root CA) tetap dicatat, tapi statusnya mengikuti sisa hari.</p>
         <div className="toolbar">
           <button className="btn primary" disabled={!dirtyRules || saving} onClick={() => put({
-            tiers: Object.fromEntries(TIER_KEYS.map((k) => [k, form.tiers[k]])), scanIntervalHours: form.scanIntervalHours,
+            tiers: Object.fromEntries(TIER_KEYS.map((k) => [k, form.tiers[k]])), scanIntervalHours: form.scanIntervalHours, scanRunner: form.scanRunner,
             scanConcurrency: form.scanConcurrency, scanTimeoutMs: form.scanTimeoutMs, monitoring: { renewalDays: form.monitoring?.renewalDays },
           }, 'Aturan disimpan.')}><Save size={15} /> Simpan aturan</button>
           {dirtyRules && <button className="btn ghost" onClick={() => setForm(structuredClone(s))}>Batal</button>}

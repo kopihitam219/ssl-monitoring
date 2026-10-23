@@ -8,7 +8,7 @@ export const GET = handle(async (req) => {
   const params = req.nextUrl.searchParams;
   const page = Math.max(1, Number(params.get('page') || 1));
   const pageSize = Math.min(200, Math.max(1, Number(params.get('pageSize') || 10)));
-  const rows = filterDomains(params);
+  const rows = await filterDomains(params);
   const pageRows = rows.slice((page - 1) * pageSize, page * pageSize);
-  return json({ total: rows.length, page, pageSize, rows: pageRows, ...(params.get('facets') === '1' ? { facets: columnFacets(params) } : {}) });
+  return json({ total: rows.length, page, pageSize, rows: pageRows, ...(params.get('facets') === '1' ? { facets: await columnFacets(params) } : {}) });
 });

@@ -7,13 +7,13 @@ import { handle, json } from '@/lib/api';
 
 export const dynamic = 'force-dynamic';
 
-export const GET = handle(async () => json({ files: listFiles(), groups: listGroups(), proxyConfigured: !!getSettings().scanProxy.url }));
+export const GET = handle(async () => json({ files: await listFiles(), groups: await listGroups(), proxyConfigured: !!getSettings().scanProxy.url }));
 
 export const POST = handle(async (req) => {
   const { name, proxy_mode: proxyMode = 'direct', group_id: groupId } = await req.json().catch(() => ({}));
   try {
-    const f = createFile({ name, proxyMode, groupId: Number(groupId) || null });
-    addActivity('upload', 'File Source of Truth dibuat', f.name);
+    const f = await createFile({ name, proxyMode, groupId: Number(groupId) || null });
+    await addActivity('upload', 'File Source of Truth dibuat', f.name);
     audit({ category: 'upload', action: 'file.create', target: f.name, summary: `Buat file Source of Truth "${f.name}" (${f.proxy_mode === 'proxy' ? 'dengan proxy' : 'tanpa proxy'})` });
     return json({ file: f }, 201);
   } catch (e) {

@@ -1,12 +1,13 @@
 'use client';
 import { useCallback, useEffect, useState } from 'react';
-import { Play, RotateCw, Power, CheckCircle2, XCircle, Clock, Loader2, Server, Activity, FolderKanban } from 'lucide-react';
+import { Play, RotateCw, Power, CheckCircle2, XCircle, Clock, Loader2, Server, Activity, FolderKanban, Cloud, Laptop, ListOrdered } from 'lucide-react';
 import ConnTestTool from './ConnTestTool';
 import { api, fmtDateTime } from './ui';
 import { ConfirmDialog } from './Modal';
 import { useSession } from './session';
 
-const TRIGGER = { manual: 'Manual', scheduler: 'Otomatis', cli: 'Terminal', soar: 'SOAR' };
+const TRIGGER = { manual: 'Manual', scheduler: 'Otomatis', cron: 'Vercel Cron', cli: 'Terminal', soar: 'SOAR', queue: 'Scanner kantor' };
+const QSTATUS = { queued: ['info', 'Menunggu'], running: ['info', 'Berjalan'], done: ['ok', 'Selesai'], failed: ['bad', 'Gagal'], expired: ['bad', 'Kedaluwarsa'], cancelled: ['bad', 'Dibatalkan'] };
 const GROUP_JOBS = ['scan', 'retry_failed', 'conn_test'];
 
 function uptime(sec) {
@@ -55,7 +56,7 @@ export default function JobsView({ onChanged }) {
     setRunning(job); setMsg(null);
     try {
       const r = await api('/api/jobs', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ job, groupId: GROUP_JOBS.includes(job) ? scope || null : null }) });
-      setMsg({ ok: r.ok, text: r.message });
+      setMsg({ ok: r.ok, text: r.message, info: r.queued });
       onChanged?.();
     } catch (e) {
       setMsg({ ok: false, text: e.message });
@@ -96,7 +97,7 @@ export default function JobsView({ onChanged }) {
   const appJobs = all;
   return (
     <>
-      {msg && <div className={`alert ${msg.ok ? 'success' : 'error'}`}>{msg.text}</div>}
+      {msg && <div className={`alert ${msg.info ? 'info' : msg.ok ? 'success' : 'error'}`}>{msg.text}</div>}
       {restarting && <div className="alert info"><Loader2 size={14} className="spin h-icon" /> Service sedang di-restart, halaman akan tersambung lagi otomatis…</div>}
 
       {/* ---------- Service (khusus admin) ---------- */}
@@ -104,9 +105,9 @@ export default function JobsView({ onChanged }) {
         <div className="panel-head wrap">
           <div>
             <h2><Server size={16} className="h-icon" /> Service</h2>
-            <p className="muted small">Server aplikasi yang berjalan di laptop ini.</p>
+            <p className="muted small">{svc?.cloud ? 'Aplikasi berjalan di Vercel (serverless). Tidak ada server yang perlu di-restart.' : 'Server aplikasi yang berjalan di komputer ini.'}</p>
           </div>
-          <div className="toolbar">
+          {!svc?.cloud && <div className="toolbar">
             <button className="btn ghost" disabled={!svc || restarting} onClick={() => setConfirm({
               title: 'Restart ringan?',
               message: 'Database dan pengaturan dimuat ulang, scheduler dijalankan ulang, dan scan yang macet lebih dari 15 menit direset. Server tetap menyala.',
@@ -118,23 +119,67 @@ export default function JobsView({ onChanged }) {
                 message: 'Server akan dimatikan lalu dinyalakan lagi otomatis (sekitar 5–20 detik). Dashboard tersambung lagi sendiri. Data tidak hilang.',
                 label: 'Restart service', run: () => { restart(true).catch((e) => { setRestarting(false); setMsg({ ok: false, text: e.message }); }); },
               })}><Power size={15} /> Restart service</button>
-          </div>
+          </div>}
         </div>
         {svc ? (
           <dl className="svc-grid">
             <div><dt>Status</dt><dd><span className="run-state ok"><i className="dot" style={{ background: 'var(--ok)' }} />Online</span></dd></div>
             <div><dt>Berjalan sejak</dt><dd>{fmtDateTime(svc.startedAt)} <span className="muted">({uptime(svc.uptimeSec)})</span></dd></div>
             <div><dt>Dijalankan dengan</dt><dd>{svc.runMode}</dd></div>
-            <div><dt>Scan otomatis</dt><dd>{sch?.active ? <>Tiap {sch.hours} jam · berikutnya {fmtDateTime(sch.nextRunAt)}</> : 'Mati'}</dd></div>
-            <div><dt>Scan berjalan</dt><dd>{svc.scanning ? <span className="run-state info"><Loader2 size={13} className="spin" /> Ya, sejak {fmtDateTime(svc.scanStartedAt)}</span> : 'Tidak'}</dd></div>
-            <div><dt>Node.js</dt><dd>{svc.node} · PID {svc.pid}</dd></div>
+            <div><dt>Scan otomatis</dt><dd>{sch?.hours ? <>Tiap {sch.hours} jam oleh {sch.by}{sch.nextRunAt ? <> · berikutnya {fmtDateTime(sch.nextRunAt)}</> : ' · segera'}</> : 'Mati'}</dd></div>
+            <div><dt>Scan berjalan</dt><dd>{svc.scanning ? <span className="run-state info"><Loader2 size={13} className="spin" /> Ya ({svc.scanBy})</span> : 'Tidak'}</dd></div>
+            <div><dt>Database</dt><dd>{svc.db}</dd></div>
+            <div><dt>Node.js</dt><dd>{svc.node}{svc.cloud ? '' : ` · PID ${svc.pid}`}</dd></div>
             <div><dt>Restart terakhir</dt><dd>{svc.lastRestart ? fmtDateTime(svc.lastRestart) : '—'}</dd></div>
           </dl>
         ) : <p className="muted">Memuat…</p>}
-        {svc && !svc.fullRestart && (
+        {svc && !svc.fullRestart && !svc.cloud && (
           <p className="muted small">Restart penuh hanya tersedia kalau aplikasi dijalankan dengan <code>npm run dev</code> atau <code>npm start</code>.</p>
         )}
       </section>}
+
+      {/* ---------- Scanner kantor & antrean (database bersama / Supabase) ---------- */}
+      {jobs?.hybrid && (
+        <section className="panel">
+          <h2>{jobs.hybrid.runner === 'cloud' ? <Cloud size={16} className="h-icon" /> : <Laptop size={16} className="h-icon" />} Scanner</h2>
+          <p className="muted small">
+            {jobs.hybrid.runner === 'cloud'
+              ? <>Scan dijalankan <b>Vercel</b> (scan otomatis lewat Vercel Cron). Domain internal / yang perlu proxy kantor bisa Check Failed — pilih <b>Scanner kantor</b> di Settings → Aturan status &amp; scan.</>
+              : <>Scan dijalankan <b>scanner kantor</b>: aplikasi ini juga, dijalankan di laptop/server kantor dengan database yang sama.
+                {jobs.hybrid.cloud ? ' Tombol Scan / Retry / Tes koneksi / Cek ulang di sini masuk antrean dan dikerjakan scanner kantor.' : ''}</>}
+          </p>
+          <div className="scanner-list">
+            {jobs.hybrid.scanners.length ? jobs.hybrid.scanners.slice(0, 5).map((x) => (
+              <span key={x.id} className={`scanner-chip ${x.online ? 'on' : ''}`}><i />{x.host} · {x.online ? 'online' : `terakhir ${fmtDateTime(x.last_seen)}`}{x.busy ? ` · ${x.busy}` : ''}</span>
+            )) : <span className="muted small">Belum ada scanner kantor yang pernah tersambung.</span>}
+          </div>
+          {jobs.hybrid.queue.length > 0 && (
+            <>
+              <h3 className="sub"><ListOrdered size={14} className="h-icon" /> Antrean job</h3>
+              <div className="table-wrap">
+                <table>
+                  <thead><tr><th>#</th><th>Dibuat</th><th>Job</th><th>Oleh</th><th>Status</th><th>Keterangan</th></tr></thead>
+                  <tbody>
+                    {jobs.hybrid.queue.map((q) => {
+                      const [cls, label] = QSTATUS[q.status] || ['info', q.status];
+                      return (
+                        <tr key={q.id}>
+                          <td className="small">{q.id}</td>
+                          <td className="small">{fmtDateTime(q.created_at)}</td>
+                          <td>{jobs.jobs.find((x) => x.key === q.job)?.label || (q.job === 'check_ids' ? 'Cek ulang domain' : q.job)}</td>
+                          <td className="small">{q.requested_by || TRIGGER[q.trigger] || q.trigger}</td>
+                          <td><span className={`run-state ${cls}`}>{q.status === 'running' && <Loader2 size={12} className="spin" />}{label}</span></td>
+                          <td className="small wrap-cell">{q.message || (q.status === 'queued' ? 'Menunggu scanner kantor…' : '')}</td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
+            </>
+          )}
+        </section>
+      )}
 
       {/* ---------- Jobs ---------- */}
       <section className="panel">

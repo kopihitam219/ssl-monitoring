@@ -134,7 +134,7 @@ export default function HealthView() {
             <div><dt>Node.js</dt><dd>{h.app.node} · PID {h.app.pid}</dd></div>
             <div><dt>Data aplikasi</dt><dd>{fmtBytes(h.app.dataSize)}</dd></div>
           </dl>
-          <p className="muted small">Batas: Perhatian ≥ 85%, Bermasalah ≥ 95% untuk CPU, RAM, dan Disk.</p>
+          <p className="muted small">{h.cloud ? 'Aplikasi berjalan di Vercel: angka CPU, RAM, dan Disk di atas milik server Vercel sesaat, bukan komputer Anda, jadi tidak dipakai untuk alarm.' : 'Batas: Perhatian ≥ 85%, Bermasalah ≥ 95% untuk CPU, RAM, dan Disk.'}</p>
         </section>
       </div>
     </>

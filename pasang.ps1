@@ -7,10 +7,12 @@
 #  Opsi:
 #    -Target "D:\Apps\ssl-monitoring"   salin ke folder lain (default: dipasang di folder ini sendiri)
 #    -NoStart                           jangan langsung jalankan aplikasi setelah install
+#    -DatabaseUrl "postgresql://..."    pakai database Supabase (ditulis ke .env.local); komputer ini jadi scanner kantor
 # =====================================================================
 param(
   [string]$Target = $PSScriptRoot,
-  [switch]$NoStart
+  [switch]$NoStart,
+  [string]$DatabaseUrl = ''
 )
 
 $ErrorActionPreference = 'Stop'
@@ -80,6 +82,21 @@ if ($sameFolder) {
   Ok "Disalin"
 }
 Set-Location $Target
+
+# ---------- database ----------
+if ($DatabaseUrl) {
+  if ($DatabaseUrl -notmatch '^postgres(ql)?://') { Fail "DatabaseUrl harus diawali postgresql://" }
+  $envFile = Join-Path $Target '.env.local'
+  $lines = @()
+  if (Test-Path $envFile) { $lines = @(Get-Content $envFile | Where-Object { $_ -notmatch '^\s*DATABASE_URL\s*=' }) }
+  $lines += "DATABASE_URL=$DatabaseUrl"
+  Set-Content -Path $envFile -Value $lines -Encoding ASCII
+  Ok "Database Supabase disimpan di .env.local (komputer ini jadi scanner kantor)"
+} elseif (Test-Path (Join-Path $Target '.env.local')) {
+  Info "Memakai pengaturan .env.local yang sudah ada"
+} else {
+  Info "Database lokal (data\pg). Untuk Supabase: pasang ulang dengan -DatabaseUrl `"postgresql://...`""
+}
 
 # ---------- 4. npm install ----------
 Step 4 "Install dependensi (npm install)"

@@ -6,7 +6,7 @@ import { handle } from '@/lib/api';
 export const dynamic = 'force-dynamic';
 
 export const GET = handle(async (req) => {
-  const rows = filterDomains(req.nextUrl.searchParams).map((d) => ({
+  const rows = (await filterDomains(req.nextUrl.searchParams)).map((d) => ({
     Domain: d.domain,
     File: d.file_name || '',
     Port: d.port,

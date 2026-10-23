@@ -10,7 +10,7 @@ export const PATCH = handle(async (req, { params }) => {
   const { id } = await params;
   const { name } = await req.json().catch(() => ({}));
   try {
-    const { before, after } = renameGroup(Number(id), name);
+    const { before, after } = await renameGroup(Number(id), name);
     audit({ category: 'upload', action: 'group.update', target: after.name, summary: `Ganti nama group "${before.name}" → "${after.name}"`,
       changes: [{ field: 'name', label: 'Nama group', before: before.name, after: after.name }] });
     return json({ group: after });
@@ -20,8 +20,8 @@ export const PATCH = handle(async (req, { params }) => {
 export const DELETE = handle(async (_req, { params }) => {
   const { id } = await params;
   try {
-    const r = deleteGroup(Number(id));
-    addActivity('mismatch', 'Group dashboard dihapus', `${r.group.name} (${r.files} file jadi tanpa group)`);
+    const r = await deleteGroup(Number(id));
+    await addActivity('mismatch', 'Group dashboard dihapus', `${r.group.name} (${r.files} file jadi tanpa group)`);
     audit({ category: 'upload', action: 'group.delete', target: r.group.name, summary: `Hapus group dashboard "${r.group.name}" (${r.files} file jadi tanpa group)` });
     return json({ ok: true, ...r });
   } catch (e) { return json({ error: e.message }, 400); }

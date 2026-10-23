@@ -1,12 +1,19 @@
-# SSL Monitoring (versi lokal)
+# SSL Monitoring
 
 Dashboard untuk memantau masa berlaku sertifikat SSL dari daftar domain resmi (**Source of Truth**). Daftarnya bisa diupload dari Excel, lalu ditambah, diubah, atau dihapus langsung di aplikasi.
 
 Domain dikelompokkan ke **group dashboard** (contoh: Local, Public, Partner). Alert, hasil scan scheduler, dan info sistem bermasalah bisa dikirim ke **Microsoft Teams, Telegram, WhatsApp, Email, dan SOAR**.
 
-Semua berjalan **lokal di laptop**. Database-nya file SQLite di folder `data/`, dan secara default dashboard hanya bisa dibuka dari laptop itu sendiri (`http://127.0.0.1:3000`). Tidak ada data yang dikirim ke layanan cloud.
+Bisa dijalankan dengan dua cara (kodenya sama):
 
-> Koneksi keluar hanya ke **domain yang dicek** (untuk membaca sertifikatnya), dan ke layanan notifikasi yang diaktifkan.
+| Cara | Database | Dibuka dari | Scan dijalankan |
+|---|---|---|---|
+| **Lokal** (laptop / server kantor) | database lokal di folder `data/pg` (Postgres tertanam, tanpa server) | `http://127.0.0.1:3000` | komputer itu sendiri |
+| **Cloud** (Vercel + Supabase) | Supabase | alamat Vercel, mis. `https://ssl-monitoring.vercel.app` | Vercel Cron, **atau** scanner kantor (laptop kantor yang menjalankan aplikasi ini dengan database Supabase yang sama) |
+
+Lihat bagian **Deploy ke Vercel + Supabase** di bawah.
+
+> Koneksi keluar hanya ke **domain yang dicek** (untuk membaca sertifikatnya), ke database (kalau memakai Supabase), dan ke layanan notifikasi / integrasi yang diaktifkan.
 
 ---
 
@@ -27,6 +34,10 @@ powershell -ExecutionPolicy Bypass -File "$HOME\Downloads\ssl-monitoring\pasang.
 ```
 
 `pasang.ps1` mengecek Node.js, menjalankan `npm install` dan `npm run build`, membuat shortcut **SSL Monitoring** di Desktop, lalu menjalankan aplikasi. Untuk menjalankan lain kali, klik shortcut itu (atau `jalankan.bat`).
+
+**Database.** Tanpa pengaturan apa pun, data disimpan di database lokal `data/pg` (Postgres tertanam, tanpa server). Supaya laptop memakai Supabase (dan sekaligus menjadi *scanner kantor*), buat file `.env.local` berisi `DATABASE_URL=…` — lihat **Deploy ke Vercel + Supabase**. Data versi 2.0 (`data/real.db`, `data/app.db`, `data/settings.json`) dipindahkan otomatis saat start pertama.
+
+> Dengan database lokal, hentikan aplikasi dulu sebelum menjalankan perintah terminal (`npm run scan`, `npm run reset-admin`, `npm run import-local`), karena database lokal hanya boleh dibuka satu proses.
 
 **Cara manual:**
 
@@ -101,7 +112,7 @@ User bisa **login dengan akun Microsoft kantor**, dan **perannya diambil dari gr
 6. Siapkan dua grup Security, misalnya `SSL-Monitoring-Admin` dan `SSL-Monitoring-Viewer`, lalu catat **Object ID**-nya.
 7. Di aplikasi: **Settings → Integrasi → klik ikon Entra ID**, isi semua nilai, klik **Simpan**, lalu **Tes koneksi**, centang **Aktifkan**, dan **Simpan** lagi.
 
-Tombol **Masuk dengan Microsoft** muncul di halaman login setelah diaktifkan. Client secret disimpan hanya di `data/settings.json`. Secret Microsoft punya masa berlaku, jadi perbarui sebelum habis. Semua login, sync, dan tes koneksi tercatat di Audit Log.
+Tombol **Masuk dengan Microsoft** muncul di halaman login setelah diaktifkan. Client secret disimpan di database (tabel pengaturan) dan tidak pernah ditampilkan lagi. Secret Microsoft punya masa berlaku, jadi perbarui sebelum habis. Semua login, sync, dan tes koneksi tercatat di Audit Log.
 
 > Kalau laptop kantor memakai proxy, jalankan dengan `$env:HTTPS_PROXY="http://proxy.kantor:8080"; $env:NODE_USE_ENV_PROXY="1"; npm start` supaya bisa mencapai `login.microsoftonline.com` dan `graph.microsoft.com`.
 
@@ -188,7 +199,7 @@ Menu **Audit Log** mencatat semua kejadian secara permanen: siapa, kapan, apa, d
 - **Aplikasi**: aksi pengguna, misalnya login dan logout (termasuk login gagal atau terkunci), tambah/ubah/hapus domain, upload Excel, perubahan Settings dan hak akses, kelola user, pindah mode, kosongkan data, run job, restart service, export, dan perintah terminal.
 - **Sistem**: aksi otomatis, misalnya service menyala, scan terjadwal, kirim Teams otomatis, migrasi data, dan error.
 
-Bisa difilter per kategori, sumber, hasil, dan tanggal, lalu di-**Export** ke Excel. Audit disimpan di `data/app.db`, terpisah dari data domain, jadi tidak ikut terhapus saat data dikosongkan. Tidak ada tombol hapus audit di aplikasi. Webhook URL, password, dan API key tidak pernah dicatat isinya.
+Bisa difilter per kategori, sumber, hasil, dan tanggal, lalu di-**Export** ke Excel. Audit disimpan di database (tabel `audit_log`) dan tidak ikut terhapus saat data dikosongkan. Tidak ada tombol hapus audit di aplikasi. Webhook URL, password, dan API key tidak pernah dicatat isinya.
 
 ## 9. Notifikasi (Teams, Telegram, WhatsApp, Email, SOAR)
 
@@ -210,7 +221,7 @@ Saluran:
 | **Email (SMTP)** | Server, port (587 STARTTLS / 465 SSL), username, password, pengirim, penerima (boleh banyak, pisahkan koma). Office 365: `smtp.office365.com:587`; Gmail: `smtp.gmail.com:587` + App Password |
 | **SOAR (webhook)** | URL webhook (mis. API Trigger workflow Rapid7 InsightConnect), nama header & nilai API key. Isi kiriman JSON: `{source, host, type, level, title, summary, sections:[{title, items:[{domain, port, status, days_remaining, expires_at, group, file}]}]}` |
 
-Langkah: klik ikon saluran → isi data → centang **Aktifkan** → pilih jenis pesan → **Simpan** → **Kirim tes**. Token, password, dan webhook URL disimpan hanya di `data/settings.json` (tidak ikut ke GitHub), tidak pernah ditampilkan utuh, dan di Audit Log hanya tertulis "(diisi)". Setiap kiriman (berhasil / gagal) tercatat di Audit Log kategori *Notifikasi*.
+Langkah: klik ikon saluran → isi data → centang **Aktifkan** → pilih jenis pesan → **Simpan** → **Kirim tes**. Token, password, dan webhook URL disimpan di database (tidak ikut ke GitHub), tidak pernah ditampilkan utuh, dan di Audit Log hanya tertulis "(diisi)". Setiap kiriman (berhasil / gagal) tercatat di Audit Log kategori *Notifikasi*.
 
 **Kalau kantor memakai proxy**, Node.js perlu diberi tahu supaya bisa mencapai layanan notifikasi (butuh Node 24 atau lebih baru):
 
@@ -235,10 +246,10 @@ Setiap event membawa `src_ip` (IP pengirim request), `actor`, `action`, `outcome
 ### Cara kirim
 
 - **Wazuh API** (Wazuh 4.6+): langsung ke Wazuh manager lewat `POST /events` di port 55000. Aplikasi login dengan user API Wazuh (token JWT diperbarui otomatis), atau memakai **API key / Bearer token tetap** kalau ada API gateway di depan Wazuh. Batas Wazuh (100 event per request, 30 request per menit) sudah diperhitungkan.
-- **File + Wazuh agent**: event ditulis ke `data/logs/ssl-monitoring-wazuh.json` (satu JSON per baris), dibaca Wazuh agent yang terpasang di laptop ini.
+- **File + Wazuh agent**: event ditulis ke `data/logs/ssl-monitoring-wazuh.json` (satu JSON per baris), dibaca Wazuh agent yang terpasang di laptop ini. Tidak tersedia di Vercel (pakai Wazuh API).
 - **Keduanya**.
 
-Event masuk **antrean** (`data/app.db`) dulu. Kalau Wazuh sedang tidak bisa dihubungi, event disimpan dan dikirim ulang otomatis (jeda 10 detik s/d 5 menit). Status antrean terlihat di Settings dan Health Check.
+Event masuk **antrean** (tabel `wazuh_outbox`) dulu. Kalau Wazuh sedang tidak bisa dihubungi, event disimpan dan dikirim ulang otomatis (jeda 10 detik s/d 5 menit). Status antrean terlihat di Settings dan Health Check.
 
 ### Langkah di Wazuh (sekali saja)
 
@@ -298,7 +309,7 @@ Untuk mode **File + Wazuh agent**, tambahkan ke `ossec.conf` agent di laptop ini
 - Wazuh API bawaan memakai sertifikat self-signed, jadi *Verifikasi sertifikat HTTPS* default mati. Nyalakan kalau sertifikat Wazuh sudah dari CA kantor.
 - Temuan SSL dikirim saat status berubah, lalu diulang setiap 24 jam (bisa diatur) selama masih bermasalah.
 - **IP pengirim (`src_ip`)**: dengan `npm start` / `npm run start:lan`, IP diambil dari koneksi TCP sehingga tidak bisa dipalsukan lewat header. Dengan `npm run dev`, IP hanya dari header `X-Forwarded-For` (bisa dipalsukan), jadi pakai `npm start` untuk production.
-- Password / API key Wazuh disimpan di `data/settings.json` (tidak ikut ke GitHub) dan tidak pernah ditampilkan atau dicatat di audit log.
+- Password / API key Wazuh disimpan di database (tidak ikut ke GitHub) dan tidak pernah ditampilkan atau dicatat di audit log.
 
 ## 11. Integrasi SOAR (dua arah)
 
@@ -376,9 +387,74 @@ git remote add origin https://github.com/USERNAME/ssl-monitoring.git
 git push -u origin main
 ```
 
-`.gitignore` sudah mencegah data lokal ikut ter-push: database termasuk user & audit (`data/*.db`), pengaturan (`data/settings.json`), file Excel yang diupload (`data/uploads/`), `.env.local`, dan `node_modules`. Cek dengan `git status` sebelum push.
+`.gitignore` sudah mencegah data lokal ikut ter-push: database lokal (`data/pg/`, juga `data/*.db` versi lama), pengaturan lama (`data/settings.json`), `.env.local` (berisi `DATABASE_URL`), dan `node_modules`. Cek dengan `git status` sebelum push.
 
-## 15. Install di laptop kantor
+## 15. Deploy ke Vercel + Supabase
+
+### Gambaran
+
+- **Supabase** menyimpan semua data: domain, file Source of Truth, group, user, audit log, pengaturan (termasuk token integrasi), antrean job.
+- **Vercel** menjalankan dashboard dari repo GitHub (setiap `git push` otomatis ter-deploy).
+- **Scan** dijalankan salah satu (pilih di *Settings → Aturan status & scan → Scan dijalankan oleh*):
+  - **Vercel (cloud)** — scan otomatis lewat Vercel Cron. Cukup kalau semua domain bisa dibuka dari internet.
+  - **Scanner kantor** — laptop/server kantor menjalankan aplikasi ini (`npm start`) dengan `DATABASE_URL` Supabase yang sama. Dipakai kalau ada domain internal, perlu proxy kantor, atau perlu ping/telnet dari jaringan kantor. Tombol **Scan / Retry / Tes koneksi / Cek ulang** di Vercel dimasukkan ke **antrean**, scanner kantor mengambilnya tiap ±10 detik, lalu hasilnya muncul di dashboard Vercel. Status scanner & antrean terlihat di menu **Jobs**.
+
+### Langkah 1 — Supabase
+
+1. Buat project di **supabase.com** (region **Singapore** paling dekat).
+2. **Project Settings → Database → Connection string → URI**. Salin yang **Transaction pooler** (port **6543**), ganti `[YOUR-PASSWORD]` dengan password database.
+   Contoh: `postgresql://postgres.abcd1234:PASSWORD@aws-0-ap-southeast-1.pooler.supabase.com:6543/postgres`
+3. Tidak perlu membuat tabel manual: tabel dibuat otomatis saat aplikasi pertama kali tersambung. Semua tabel diberi **Row Level Security** (tertutup untuk REST API Supabase / anon key); aplikasi tetap bisa membaca karena tersambung langsung lewat `DATABASE_URL`.
+
+### Langkah 2 — Vercel
+
+1. **vercel.com → Add New → Project → Import** repo GitHub `ssl-monitoring`. Framework otomatis *Next.js*. Klik **Deploy** (boleh gagal dulu, lanjut langkah berikut).
+2. **Settings → Environment Variables**, isi (centang Production, Preview, Development):
+
+   | Nama | Isi |
+   |---|---|
+   | `DATABASE_URL` | URI Supabase dari langkah 1 (atau sambungkan lewat **Storage → Supabase**, yang mengisi `POSTGRES_URL` otomatis) |
+   | `CRON_SECRET` | teks acak panjang, mis. hasil `openssl rand -hex 32` |
+   | `SCAN_RUNNER` | (opsional) `local` kalau dari awal mau pakai scanner kantor |
+
+3. **Deployments → … → Redeploy**. Buka alamat Vercel-nya → buat akun Admin pertama (atau login dengan akun lama kalau data lama sudah dipindahkan, lihat langkah 4).
+4. Kalau memakai Entra ID: ganti **Redirect URI** di App registration menjadi `https://ALAMAT-VERCEL/api/auth/microsoft/callback`.
+
+**Vercel Cron.** `vercel.json` menjalankan `/api/cron` **sekali sehari pukul 08.00 WIB** (batas paket Hobby). `/api/cron` menjalankan scan kalau sudah waktunya (Settings → *Scan otomatis tiap N jam*), mengecek kondisi sistem, dan mengirim antrean Wazuh. Supaya lebih sering:
+- paket **Pro**: ubah `schedule` di `vercel.json` menjadi `0 * * * *` (tiap jam), atau
+- pakai layanan cron gratis (mis. **cron-job.org**): panggil `GET https://ALAMAT-VERCEL/api/cron` dengan header `Authorization: Bearer <CRON_SECRET>` tiap 15–60 menit, atau
+- pakai **scanner kantor** (jadwalnya dijalankan laptop kantor).
+
+**Batas waktu.** Satu request di Vercel maksimal ±60 detik. Kalau domain banyak, scan di Vercel mengerjakan domain yang paling lama tidak dicek lebih dulu dan sisanya dilanjutkan otomatis di panggilan cron berikutnya (tertulis di pesan scan: *"… domain dilanjutkan scan berikutnya"*). Scanner kantor tidak punya batas ini.
+
+**Yang tidak tersedia di Vercel:** restart service, Wazuh mode *file + agent*, ping (Vercel tidak mengizinkan ICMP — tes koneksi tetap menjalankan DNS, port, dan HTTPS). Angka CPU/RAM/Disk di Health Check milik server Vercel, bukan alarm.
+
+### Langkah 3 — Scanner kantor (kalau dipilih)
+
+Di laptop/server kantor yang bisa menjangkau domain internal:
+
+1. Pasang aplikasi seperti biasa (`pasang.ps1`).
+2. Buat file **`.env.local`** di folder aplikasi berisi:
+   ```
+   DATABASE_URL=postgresql://postgres.abcd1234:PASSWORD@aws-0-ap-southeast-1.pooler.supabase.com:6543/postgres
+   ```
+   (Kalau jaringan kantor memblokir port 6543, pakai *Session pooler* port 5432.)
+3. Jalankan (`npm start` / shortcut Desktop). Di terminal muncul `[scanner] scanner kantor aktif`. Di Vercel → **Jobs** → *Scanner*, komputer ini tampil **online**.
+4. Di Vercel → **Settings → Aturan status & scan → Scan dijalankan oleh → Scanner kantor** → Simpan.
+
+Biarkan scanner kantor menyala. Kalau mati, job di antrean menunggu sampai scanner menyala lagi (dibatalkan otomatis setelah 6 jam). Boleh lebih dari satu scanner; satu job hanya diambil satu scanner, dan scan tidak pernah berjalan dobel.
+
+### Langkah 4 — Memindahkan data lama ke Supabase
+
+Data dari versi lokal (domain, file, group, user, audit log, pengaturan) dipindahkan **otomatis** saat aplikasi start pertama kali dengan `DATABASE_URL` Supabase, **selama database Supabase masih kosong**:
+
+1. Di laptop yang berisi data lama, buat `.env.local` berisi `DATABASE_URL` Supabase (langkah 3).
+2. Jalankan aplikasi (atau `npm run import-local`). Terminal menampilkan `[impor] data versi lama dipindahkan: …`.
+3. Buka alamat Vercel → login dengan akun yang sama seperti di laptop.
+
+Yang dipindahkan adalah file SQLite versi 2.0 (`data/real.db`, `data/app.db`, `data/settings.json`). Kalau database Supabase sudah berisi data, impor dilewati supaya tidak tercampur.
+
+## 16. Install di laptop kantor
 
 ```bash
 git clone https://github.com/USERNAME/ssl-monitoring.git
@@ -411,11 +487,13 @@ $env:NODE_EXTRA_CA_CERTS="C:\path\ke\root-ca-kantor.pem"; npm run dev
 NODE_EXTRA_CA_CERTS=/path/ke/root-ca-kantor.pem npm run dev
 ```
 
-## 16. Proxy untuk cek SSL
+## 17. Proxy untuk cek SSL
 
 *Settings → Proxy untuk cek SSL*: isi `http://proxy.kantor:8080` (+ username/password bila perlu), klik **Tes proxy**. Domain dicek lewat HTTP CONNECT, sehingga yang terbaca tetap sertifikat asli server. Kapan proxy dipakai diatur per file di **Source of Truth** (lihat *Pilihan proxy per file*).
 
-## 17. Menjadwalkan scan tanpa membuka dashboard
+## 18. Menjadwalkan scan tanpa membuka dashboard
+
+Selama aplikasi (`npm start` / shortcut Desktop) menyala, scan otomatis sudah berjalan sendiri tanpa perlu membuka dashboard. Alternatif tanpa aplikasi menyala:
 
 - **Windows Task Scheduler**: buat task baru → Action: *Start a program*
   - Program: `npm.cmd`
@@ -426,7 +504,7 @@ NODE_EXTRA_CA_CERTS=/path/ke/root-ca-kantor.pem npm run dev
   0 */6 * * * cd /path/ke/ssl-monitoring && npm run scan >> scan.log 2>&1
   ```
 
-## 18. Struktur proyek
+## 19. Struktur proyek
 
 ```
 app/                     Dashboard (Next.js) + API
@@ -449,6 +527,8 @@ app/                     Dashboard (Next.js) + API
   api/jobs               daftar job, jalankan job, riwayat
   api/sync               tombol Sync Now (scan SSL)
   api/service            status service, restart ringan / penuh
+  api/cron               dipanggil Vercel Cron (scan otomatis, cek sistem, antrean Wazuh)
+  api/boot               menyalakan scheduler saat npm start (internal)
   api/auth/*             login, logout, setup admin pertama, ganti password
   api/users              kelola user (admin)
   api/audit              audit log + export
@@ -457,8 +537,11 @@ app/                     Dashboard (Next.js) + API
 components/              Komponen tampilan
 wazuh/                   rules Wazuh (ssl_monitoring_rules.xml)
 lib/
-  settings.js            pengaturan (data/settings.json)
-  db.js                  database SQLite (data/real.db)
+  pg.js, schema.js       koneksi database (Supabase via DATABASE_URL, atau PGlite lokal di data/pg) & skema tabel (dibuat otomatis)
+  settings.js            pengaturan (tabel app_settings)
+  db.js                  data domain, file Source of Truth, group, riwayat
+  scanner.js, locks.js   scanner kantor (antrean job & detak) dan kunci scan bersama
+  legacy.js              pindahkan data versi 2.0 (SQLite) ke database baru
   ssl-check.js           cek sertifikat via koneksi TLS (langsung, lewat proxy, atau langsung → otomatis proxy kalau gagal)
   excel.js               baca file Excel
   status.js              aturan status
@@ -470,24 +553,22 @@ lib/
   wazuh.js               kirim log aplikasi, keamanan & temuan SSL ke Wazuh (antrean)
   notify.js              notifikasi Teams / Telegram / WhatsApp / Email / SOAR: alert, hasil scan, info sistem
   filter.js              filter & urut SSL Inventory, daftar nilai per kolom
-  auth.js, appdb.js      user, password (scrypt), sesi login, peran & izin (data/app.db)
+  auth.js                user, password (scrypt), sesi login, peran & izin
   audit.js               audit log (aplikasi & sistem)
   health.js              CPU, RAM, Disk, status service
   runner.js              daftar job + pencatatan riwayat
   service.js             status & restart service
-  scheduler.js           scan otomatis berkala + cek kondisi sistem tiap 5 menit
-scripts/                 perintah terminal (scan, reset, reset-admin, sample:excel) + serve.js (supervisor npm start) + server.js (server production)
+  scheduler.js           scan otomatis, scanner kantor (ambil antrean), cek kondisi sistem; cronTick untuk Vercel Cron
+scripts/                 perintah terminal (scan, reset, reset-admin, import-local, sample:excel) + serve.js (supervisor npm start) + server.js (server production)
 pasang.ps1, jalankan.bat pemasangan & menjalankan di Windows
+vercel.json              Vercel Cron & region
 data/
   sample/                Excel contoh
 ```
 
-> Versi 2.0 menghapus integrasi **SOAR**, **AWS Route 53**, **Wazuh**, **Splunk**, **Microsoft 365 (Entra ID)**, dan mode **Demo**. Aplikasi selalu memakai `data/real.db`. Database lama tetap bisa dipakai: domain yang dulu hanya berasal dari SOAR / Route 53 tidak dipantau lagi (riwayatnya tetap tersimpan), domain dari Excel tetap seperti biasa. Catatan lama di Audit Log tidak dihapus.
+> Versi 2.1 memindahkan penyimpanan dari SQLite (`data/*.db`, `data/settings.json`) ke Postgres (Supabase atau database lokal `data/pg`), supaya bisa jalan di Vercel. Data versi 2.0 dipindahkan otomatis.
 
-## 19. Rencana berikutnya (opsional)
+## 20. Rencana berikutnya (opsional)
 
-Semua akses data ada di `lib/db.js`, jadi mudah dipindah ke Supabase nanti. Langkah berikutnya bisa berupa:
-
-- Deploy ke Vercel.
-- Scan terjadwal lewat GitHub Actions.
 - Notifikasi Slack.
+- Scan terjadwal lewat GitHub Actions (alternatif Vercel Cron).

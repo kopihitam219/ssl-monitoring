@@ -26,7 +26,7 @@ export const POST = handle(async (req) => {
 export const DELETE = handle(async (req) => {
   const { ids } = await req.json().catch(() => ({}));
   try {
-    const r = removeDomainsManual(ids);
+    const r = await removeDomainsManual(ids);
     audit({ category: 'domain', action: 'domain.delete', target: r.domains.slice(0, 5).join(', ') + (r.removed > 5 ? ` +${r.removed - 5}` : ''),
       summary: `Hapus ${r.removed} domain dari Source of Truth`, details: { domains: r.domains } });
     return json(r);

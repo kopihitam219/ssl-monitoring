@@ -7,7 +7,7 @@ export const dynamic = 'force-dynamic';
 
 export const GET = handle(async (req) => {
   const filter = auditFilter(req.nextUrl.searchParams);
-  const rows = allAudit(filter).map((r) => ({
+  const rows = (await allAudit(filter)).map((r) => ({
     Waktu: new Date(r.at).toLocaleString('id-ID'),
     Pengguna: r.actor,
     'Alamat IP': r.ip || '',

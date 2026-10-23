@@ -5,7 +5,9 @@
 import { importExcel, isScanning } from '@/lib/jobs';
 import { runJob } from '@/lib/runner';
 import { audit } from '@/lib/audit';
+import { after } from 'next/server';
 import { handle, json } from '@/lib/api';
+import { shouldDelegate } from '@/lib/scanner';
 
 export const dynamic = 'force-dynamic';
 
@@ -18,13 +20,14 @@ export const POST = handle(async (req) => {
   if (!file || typeof file === 'string') return json({ error: 'File tidak ditemukan' }, 400);
   if (!/\.(xlsx|xls|csv)$/i.test(file.name)) return json({ error: 'Format harus .xlsx, .xls, atau .csv' }, 400);
   try {
-    const res = importExcel(Buffer.from(await file.arrayBuffer()), file.name, { proxyMode, fileId, groupId });
+    const res = await importExcel(Buffer.from(await file.arrayBuffer()), file.name, { proxyMode, fileId, groupId });
     audit({ category: 'upload', action: res.created ? 'upload.new' : 'upload.replace', target: res.file.name,
       summary: `Upload Excel ${res.created ? 'file baru' : '(ganti isi)'} "${res.file.name}": ${res.total} domain, ${res.added} baru, ${res.removed} dihapus · ${res.file.proxy_mode === 'proxy' ? 'dengan proxy' : 'tanpa proxy'}`,
       details: { file: file.name, size: file.size, proxyMode: res.file.proxy_mode, groupId: res.file.group_id, total: res.total, added: res.added, updated: res.updated, removed: res.removed, skippedRows: res.skipped } });
     // domain hasil upload langsung dicek di belakang layar (tanpa menunggu Sync Now / jadwal)
-    const autoScan = !isScanning();
-    if (autoScan) runJob('scan', { trigger: 'manual' }).catch((e) => console.error('[upload] scan otomatis gagal:', e.message));
+    // (Vercel: setelah respons dikirim lewat after(); mode scanner kantor: masuk antrean)
+    const autoScan = shouldDelegate() || !(await isScanning());
+    if (autoScan) after(() => runJob('scan', { trigger: 'manual' }).catch((e) => console.error('[upload] scan otomatis gagal:', e.message)));
     return json({ ...res, autoScan });
   } catch (e) {
     audit({ category: 'upload', action: 'upload.replace', target: file.name, ok: false, summary: `Upload Excel gagal: ${e.message}` });

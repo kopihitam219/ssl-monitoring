@@ -6,5 +6,5 @@ import { handle, json } from '@/lib/api';
 export const dynamic = 'force-dynamic';
 
 export const GET = handle(async (req) => {
-  return json({ needsSetup: needsSetup(), user: userFromToken(req.cookies.get(COOKIE)?.value), microsoft: entraConfigured() });
+  return json({ needsSetup: await needsSetup(), user: await userFromToken(req.cookies.get(COOKIE)?.value), microsoft: entraConfigured() });
 }, { access: 'public' });

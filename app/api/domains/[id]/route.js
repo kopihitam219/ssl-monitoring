@@ -6,10 +6,10 @@ export const dynamic = 'force-dynamic';
 
 export const GET = handle(async (_req, { params }) => {
   const { id } = await params;
-  const d = getDomain(Number(id));
+  const d = await getDomain(Number(id));
   if (!d) return json({ error: 'Domain tidak ditemukan' }, 404);
   return json({
     domain: decorate(d),
-    checks: getChecks(d.id),
+    checks: await getChecks(d.id),
   });
 });

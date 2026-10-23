@@ -28,4 +28,8 @@ http.createServer((req, res) => {
   handle(req, res);
 }).listen(PORT, HOST, () => {
   console.log(`   ▲ SSL Monitoring siap di http://${HOST === '0.0.0.0' ? 'localhost' : HOST}:${PORT}${TRUST_PROXY ? ' (TRUST_PROXY aktif)' : ''}`);
+  // nyalakan scheduler / scanner kantor & pindahkan data versi lama (sekali)
+  fetch(`http://${HOST === '0.0.0.0' || HOST === '::' ? '127.0.0.1' : HOST}:${PORT}/api/boot`, { method: 'POST', headers: { 'x-ssl-boot': process.env.SSL_IP_KEY } })
+    .then(async (r) => { if (!r.ok) console.error('[boot]', (await r.json().catch(() => ({}))).error || r.status); })
+    .catch((e) => console.error('[boot]', e.message));
 });

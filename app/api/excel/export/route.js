@@ -8,9 +8,9 @@ import { handle, json } from '@/lib/api';
 export const dynamic = 'force-dynamic';
 
 export const GET = handle(async (req) => {
-  const f = getFile(Number(req.nextUrl.searchParams.get('file')));
+  const f = await getFile(Number(req.nextUrl.searchParams.get('file')));
   if (!f) return json({ error: 'File tidak ditemukan' }, 404);
-  const rows = getExcelDomains(f.id).map((d) => [d.domain, d.environment || '', d.application || '', d.owner || '', d.port, d.notes || '']);
+  const rows = (await getExcelDomains(f.id)).map((d) => [d.domain, d.environment || '', d.application || '', d.owner || '', d.port, d.notes || '']);
   const sheet = XLSX.utils.aoa_to_sheet([['Domain', 'Environment', 'Application', 'Owner', 'Port', 'Notes'], ...rows]);
   sheet['!cols'] = [{ wch: 30 }, { wch: 14 }, { wch: 20 }, { wch: 16 }, { wch: 6 }, { wch: 34 }];
   audit({ category: 'export', action: 'export.excel', target: f.name, summary: `Download Excel "${f.name}" terbaru (${rows.length} domain)` });

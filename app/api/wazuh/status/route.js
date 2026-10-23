@@ -3,4 +3,4 @@ import { wazuhStatus } from '@/lib/wazuh';
 import { handle, json } from '@/lib/api';
 
 export const dynamic = 'force-dynamic';
-export const GET = handle(async () => json(wazuhStatus()), { access: 'admin' });
+export const GET = handle(async () => json(await wazuhStatus()), { access: 'admin' });

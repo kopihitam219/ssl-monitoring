@@ -12,7 +12,7 @@ export const POST = handle(async (req) => {
   const { full = false } = await req.json().catch(() => ({}));
   let soft;
   try {
-    soft = softRestart();
+    soft = await softRestart();
   } catch (e) {
     audit({ category: 'service', action: full ? 'service.restart-full' : 'service.restart', ok: false, summary: `Restart gagal: ${e.message}` });
     return json({ error: e.message }, 409);
@@ -22,12 +22,12 @@ export const POST = handle(async (req) => {
       return json({ ok: true, full: false, soft,
         message: 'Restart ringan selesai. Restart penuh hanya tersedia kalau aplikasi dijalankan dengan "npm run dev" atau "npm start".' });
     }
-    addActivity('sync', 'Service di-restart', 'Restart penuh dari menu Jobs');
+    await addActivity('sync', 'Service di-restart', 'Restart penuh dari menu Jobs');
     audit({ category: 'service', action: 'service.restart-full', target: 'Service', summary: 'Restart service (penuh)' });
     scheduleFullRestart();
     return json({ ok: true, full: true, message: 'Service sedang di-restart…' });
   }
-  addActivity('sync', 'Service di-restart', `Restart ringan${soft.resetStuckScan ? ' (scan macet direset)' : ''}`);
+  await addActivity('sync', 'Service di-restart', `Restart ringan${soft.resetStuckScan ? ' (scan macet direset)' : ''}`);
   audit({ category: 'service', action: 'service.restart', target: 'Service', summary: `Restart ringan${soft.resetStuckScan ? ' (scan macet direset)' : ''}` });
   return json({ ok: true, full: false, soft, message: 'Restart ringan selesai.' });
 }, { access: 'admin' });

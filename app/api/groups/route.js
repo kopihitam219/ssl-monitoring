@@ -6,13 +6,13 @@ import { handle, json } from '@/lib/api';
 
 export const dynamic = 'force-dynamic';
 
-export const GET = handle(async () => json({ groups: listGroups() }));
+export const GET = handle(async () => json({ groups: await listGroups() }));
 
 export const POST = handle(async (req) => {
   const { name } = await req.json().catch(() => ({}));
   try {
-    const g = createGroup(name);
-    addActivity('upload', 'Group dashboard ditambahkan', g.name);
+    const g = await createGroup(name);
+    await addActivity('upload', 'Group dashboard ditambahkan', g.name);
     audit({ category: 'upload', action: 'group.create', target: g.name, summary: `Tambah group dashboard "${g.name}"` });
     return json({ group: g }, 201);
   } catch (e) { return json({ error: e.message }, 400); }

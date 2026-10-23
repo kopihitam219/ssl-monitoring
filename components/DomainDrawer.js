@@ -9,6 +9,7 @@ export default function DomainDrawer({ id, onClose, onChanged }) {
   const { can } = useSession();
   const [data, setData] = useState(null);
   const [checking, setChecking] = useState(false);
+  const [notice, setNotice] = useState('');
   const [error, setError] = useState('');
 
   const load = () => api(`/api/domains/${id}`).then(setData).catch((e) => setError(e.message));
@@ -21,7 +22,15 @@ export default function DomainDrawer({ id, onClose, onChanged }) {
 
   async function recheck() {
     setChecking(true);
-    try { await api(`/api/domains/${id}/check`, { method: 'POST' }); await load(); onChanged?.(); }
+    try {
+      const r = await api(`/api/domains/${id}/check`, { method: 'POST' });
+      if (r.queued) {
+        setNotice(`${r.message}. Hasilnya muncul di sini setelah scanner selesai.`);
+        // tunggu scanner kantor (cek tiap 5 detik, maksimal 1 menit)
+        for (let i = 0; i < 12; i++) { await new Promise((ok) => setTimeout(ok, 5000)); await load(); }
+      } else await load();
+      onChanged?.();
+    }
     catch (e) { setError(e.message); }
     finally { setChecking(false); }
   }
@@ -69,6 +78,7 @@ export default function DomainDrawer({ id, onClose, onChanged }) {
           <button className="icon-btn" onClick={onClose} aria-label="Tutup"><X size={18} /></button>
         </div>
         {error && <div className="alert error">{error}</div>}
+        {notice && <div className="alert info" onClick={() => setNotice("")}>{notice}</div>}
         {d && (
           <>
             {can('sync') && (

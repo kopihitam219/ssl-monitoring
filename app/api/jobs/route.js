@@ -7,25 +7,28 @@ import { schedulerStatus } from '@/lib/scheduler';
 import { handle, json } from '@/lib/api';
 import { can } from '@/lib/auth';
 import { getSettings } from '@/lib/settings';
+import { shouldDelegate, getQueue, listScanners, scanRunner } from '@/lib/scanner';
+import { usingSupabase } from '@/lib/pg';
 
 export const dynamic = 'force-dynamic';
-export const maxDuration = 300;
+export const maxDuration = 60; // batas Vercel (paket Hobby); scan panjang dilanjutkan otomatis
 
 export const GET = handle(async () => {
-  const last = Object.fromEntries(getLastJobRuns().map((r) => [r.job, r]));
+  const last = Object.fromEntries((await getLastJobRuns()).map((r) => [r.job, r]));
   const s = getSettings();
   return json({
-    jobs: Object.entries(getJobs()).map(([key, j]) => ({
+    jobs: Object.entries(getJobs()).filter(([, j]) => !j.hidden).map(([key, j]) => ({
       key, label: j.label, description: j.description,
       available: j.available ? j.available() : true,
       reason: j.reason || '',
       last: last[key] || null,
     })),
     mode: s.mode,
-    history: getJobRuns(25),
-    scanning: isScanning(),
-    scheduler: schedulerStatus(),
+    history: await getJobRuns(25),
+    scanning: await isScanning(),
+    scheduler: await schedulerStatus(),
     legacyLabels: LEGACY_JOB_LABELS,
+    hybrid: usingSupabase() ? { cloud: !!process.env.VERCEL, runner: scanRunner(), delegate: shouldDelegate(), queue: await getQueue(12), scanners: await listScanners() } : null,
   });
 }, { access: 'jobs' });
 
@@ -38,10 +41,11 @@ export const POST = handle(async (req, { user }) => {
   const jobs = getJobs();
   if (!jobs[job]) return json({ error: 'Job tidak dikenal' }, 400);
   if (!can(user, SYNC_JOBS.includes(job) ? 'sync' : 'jobs') && !can(user, 'jobs')) return json({ error: 'Anda tidak punya izin untuk ini. Hubungi admin.' }, 403);
-  if (jobs[job].exclusive !== false && isScanning()) return json({ error: 'Scan sedang berjalan, tunggu sebentar' }, 409);
+  if (jobs[job].hidden) return json({ error: 'Job tidak dikenal' }, 400);
+  if (jobs[job].exclusive !== false && !shouldDelegate() && await isScanning()) return json({ error: 'Scan sedang berjalan, tunggu sebentar' }, 409);
   try {
     const r = await runJob(job, { trigger: 'manual', groupId: groupId === 'none' ? 'none' : Number(groupId) || null });
-    return json({ ok: r.ok, message: r.message });
+    return json({ ok: r.ok, message: r.message, queued: !!r.queued });
   } catch (e) {
     return json({ ok: false, error: e.message }, 500);
   }

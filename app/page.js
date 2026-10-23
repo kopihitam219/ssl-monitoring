@@ -127,7 +127,7 @@ function App({ user, onSessionChange, onLoggedOut }) {
     setSyncing(true); setToast(null);
     try {
       const r = await api('/api/sync', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: '{}' });
-      setToast({ ok: true, text: `Scan: ${r.scan.total} domain dalam ${r.scan.seconds} detik` });
+      setToast({ ok: true, text: r.queued ? r.message : `Scan: ${r.scan.total} domain dalam ${r.scan.seconds} detik${r.scan.remaining ? ` · ${r.scan.remaining} domain dilanjutkan otomatis (batas waktu)` : ''}` });
     } catch (e) {
       setToast({ ok: false, text: e.message });
     } finally {
@@ -188,7 +188,7 @@ function App({ user, onSessionChange, onLoggedOut }) {
             <button className="icon-btn" title="Logout" aria-label="Logout" onClick={doLogout}><LogOut size={15} /></button>
           </div>
           <div><i className="dot" style={{ background: error ? 'var(--danger)' : 'var(--ok)' }} /> {error ? 'System Error' : 'System Online'}</div>
-          <div className="muted">v2.0.0 · lokal</div>
+          <div className="muted">v2.1.0 · {data?.deploy || "…"}</div>
         </div>
       </aside>
       <div className="backdrop" onClick={() => setNavOpen(false)} />

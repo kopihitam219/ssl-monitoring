@@ -8,5 +8,5 @@ export const GET = handle(async (req) => {
   const p = req.nextUrl.searchParams;
   const page = Math.max(1, Number(p.get('page') || 1));
   const pageSize = Math.min(200, Math.max(1, Number(p.get('pageSize') || 25)));
-  return json({ page, pageSize, ...listAudit(auditFilter(p), { page, pageSize }) });
+  return json({ page, pageSize, ...(await listAudit(auditFilter(p), { page, pageSize })) });
 }, { access: 'audit' });

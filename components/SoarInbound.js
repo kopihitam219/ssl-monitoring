@@ -50,6 +50,7 @@ export default function SoarInbound({ settings, put, saving, setMsg }) {
   }
 
   const base = origin || 'http://127.0.0.1:3000';
+  const isLocalHost = /^https?:\/\/(localhost|127\.|10\.|192\.168\.|172\.(1[6-9]|2\d|3[01])\.)/.test(base);
   const key = newKey || '<API_KEY>';
   const exPost = `curl -X POST "${base}/api/soar/domains" \\
   -H "Authorization: Bearer ${key}" -H "Content-Type: application/json" \\
@@ -104,7 +105,8 @@ export default function SoarInbound({ settings, put, saving, setMsg }) {
 
       <details className="guide">
         <summary>Endpoint & contoh untuk SOAR</summary>
-        <p className="small">Header: <code>Authorization: Bearer &lt;API key&gt;</code> (atau <code>X-Api-Key</code>). SOAR harus bisa menjangkau alamat aplikasi ini, mis. <code>{base}</code> — pakai IP / nama komputer ini. <code>npm start</code> dan shortcut Desktop hanya bisa diakses dari komputer ini; supaya SOAR di server lain bisa menjangkau, jalankan <code>npm run start:lan</code> dan buka port 3000 di Windows Firewall.</p>
+        <p className="small">Header: <code>Authorization: Bearer &lt;API key&gt;</code> (atau <code>X-Api-Key</code>). SOAR mengirim ke alamat <code>{base}</code>.
+          {isLocalHost && <> Aplikasi ini sedang dibuka dari komputer lokal: <code>npm start</code> dan shortcut Desktop hanya bisa diakses dari komputer ini. Supaya SOAR di server lain bisa menjangkau, jalankan <code>npm run start:lan</code> dan buka port 3000 di Windows Firewall — atau pakai alamat Vercel.</>}</p>
         <table className="soar-ep small">
           <tbody>
             <tr><td><code>POST /api/soar/domains</code></td><td>Kirim domain. Format bebas: <code>{'{"domain":…}'}</code>, array, <code>{'{"domains":[…]}'}</code>, NDJSON, atau format Splunk HEC <code>{'{"event":{…}}'}</code>. Field: domain / fqdn / host / url, port, environment, application, owner, notes, action (add / remove). <code>?scan=0</code> = jangan langsung dicek.</td></tr>

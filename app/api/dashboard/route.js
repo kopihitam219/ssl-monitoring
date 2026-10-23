@@ -5,6 +5,7 @@ import { handle, json } from '@/lib/api';
 import { getSettings } from '@/lib/settings';
 import { startScheduler } from '@/lib/scheduler';
 import { initService } from '@/lib/service';
+import { usingSupabase } from '@/lib/pg';
 
 export const dynamic = 'force-dynamic';
 
@@ -13,7 +14,7 @@ const ENV_ORDER = ['Production', 'Development', 'UAT', 'Staging'];
 const DATE = /^\d{4}-\d{2}-\d{2}$/;
 
 export const GET = handle(async (req) => {
-  initService();
+  await initService();
   startScheduler(); // scan otomatis berkala; aman dipanggil berkali-kali (hanya jalan sekali)
   // Periode: ?from=YYYY-MM-DD&to=YYYY-MM-DD (tanggal lokal, inklusif). Kosong = semua.
   const p = req.nextUrl.searchParams;
@@ -22,7 +23,7 @@ export const GET = handle(async (req) => {
   const fromIso = from ? new Date(`${from}T00:00:00`).toISOString() : null;
   const toIso = to ? new Date(`${to}T23:59:59.999`).toISOString() : null;
 
-  const { total, counts, cards, rows } = buildSummary(getDomains());
+  const { total, counts, cards, rows } = buildSummary(await getDomains());
 
   const envCount = {};
   for (const d of rows) {
@@ -37,13 +38,14 @@ export const GET = handle(async (req) => {
     cards,
     environments,
     period: { from, to },
-    trend: getTrend(from || '0000-00-00', to || '9999-12-31'),
-    sources: getSources(),
-    activities: getActivitiesInRange(fromIso, toIso, 8),
-    activityTotal: countActivitiesInRange(fromIso, toIso),
-    scanning: isScanning(),
-    groups: dashboardGroups(),
+    trend: await getTrend(from || '0000-00-00', to || '9999-12-31'),
+    sources: await getSources(),
+    activities: await getActivitiesInRange(fromIso, toIso, 8),
+    activityTotal: await countActivitiesInRange(fromIso, toIso),
+    scanning: await isScanning(),
+    groups: await dashboardGroups(),
     mode: getSettings().mode,
+    deploy: process.env.VERCEL ? 'Vercel + Supabase' : usingSupabase() ? 'Supabase (scanner kantor)' : 'lokal',
     config: (() => {
       const st = getSettings();
       return {

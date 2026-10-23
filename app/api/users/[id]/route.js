@@ -9,24 +9,24 @@ export const dynamic = 'force-dynamic';
 export const PUT = handle(async (req, { params, user }) => {
   const id = Number((await params).id);
   const body = await req.json().catch(() => ({}));
-  const target = getUser(id);
+  const target = await getUser(id);
   try {
     if (body.password) {
-      setPassword(id, String(body.password), { mustChange: body.mustChange !== false });
-      logoutAll(id);
+      await setPassword(id, String(body.password), { mustChange: body.mustChange !== false });
+      await logoutAll(id);
       audit({ category: 'auth', action: 'user.reset-password', target: target?.username,
         summary: `Reset password user ${target?.username}${body.mustChange !== false ? ' (wajib ganti saat login)' : ''}` });
     }
     const fields = ['name', 'role', 'active'].filter((k) => body[k] !== undefined);
     if (fields.length) {
-      const { before, after } = updateUser(id, body, user.id);
+      const { before, after } = await updateUser(id, body, user.id);
       const changes = diff(before, after, ['name', 'role', 'active']);
       if (changes.length) {
         audit({ category: 'auth', action: 'user.update', target: after.username,
           summary: `Ubah user ${after.username}: ${changes.map((c) => c.field).join(', ')}`, changes });
       }
     }
-    return json({ user: getUser(id) });
+    return json({ user: await getUser(id) });
   } catch (e) {
     audit({ category: 'auth', action: 'user.update', target: target?.username, ok: false, summary: `Gagal ubah user: ${e.message}` });
     return json({ error: e.message }, 400);
@@ -36,7 +36,7 @@ export const PUT = handle(async (req, { params, user }) => {
 export const DELETE = handle(async (_req, { params, user }) => {
   const id = Number((await params).id);
   try {
-    const u = deleteUser(id, user.id);
+    const u = await deleteUser(id, user.id);
     audit({ category: 'auth', action: 'user.delete', target: u.username, summary: `Hapus user ${u.username} (${u.role})` });
     return json({ ok: true });
   } catch (e) {
