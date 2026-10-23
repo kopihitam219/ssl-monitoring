@@ -1,0 +1,30 @@
+{
+  "_comment": "Data contoh mode Demo: seolah-olah hasil upload Excel Source of Truth. Ubah lalu klik Settings → Isi ulang data demo (atau npm run demo).",
+  "file": "source_of_truth_demo.xlsx (contoh)",
+  "domains": [
+    { "domain": "www.w3.org", "environment": "Production", "application": "W3C", "owner": "Web Team" },
+    { "domain": "www.ietf.org", "environment": "Production", "application": "IETF", "owner": "Network Team" },
+    { "domain": "go.dev", "environment": "Production", "application": "Go Portal", "owner": "Dev Team" },
+    { "domain": "www.nasa.gov", "environment": "Production", "application": "NASA", "owner": "IT Team" },
+    { "domain": "www.wikipedia.org", "environment": "Production", "application": "Wiki", "owner": "Content Team" },
+    { "domain": "github.com", "environment": "Production", "application": "Source Code", "owner": "Dev Team" },
+    { "domain": "docs.github.com", "environment": "Production", "application": "Docs", "owner": "Dev Team" },
+    { "domain": "learn.microsoft.com", "environment": "Production", "application": "Learning", "owner": "IT Team" },
+    { "domain": "aws.amazon.com", "environment": "Production", "application": "Cloud Console", "owner": "Cloud Team" },
+    { "domain": "www.cloudflare.com", "environment": "Production", "application": "CDN", "owner": "Network Team", "via_proxy": true },
+    { "domain": "www.mozilla.org", "environment": "Production", "application": "Browser", "owner": "Web Team", "via_proxy": true },
+    { "domain": "www.python.org", "environment": "Development", "application": "Python", "owner": "Dev Team" },
+    { "domain": "nodejs.org", "environment": "Development", "application": "Node.js", "owner": "Dev Team" },
+    { "domain": "www.rust-lang.org", "environment": "UAT", "application": "Rust Portal", "owner": "Dev Team" },
+    { "domain": "ubuntu.com", "environment": "UAT", "application": "Ubuntu", "owner": "Infra Team" },
+    { "domain": "www.debian.org", "environment": "Staging", "application": "Debian", "owner": "Infra Team" },
+    { "domain": "www.bbc.co.uk", "environment": "Staging", "application": "BBC", "owner": "Media Team" },
+    { "domain": "letsencrypt.org", "environment": "Others", "application": "Let's Encrypt", "owner": "Security Team" },
+    { "domain": "expired.badssl.com", "environment": "Development", "application": "Test App", "owner": "QA Team", "notes": "Contoh sertifikat expired" },
+    { "domain": "self-signed.badssl.com", "environment": "Development", "application": "Test App", "owner": "QA Team", "notes": "Contoh sertifikat self-signed" },
+    { "domain": "wrong.host.badssl.com", "environment": "Development", "application": "Test App", "owner": "QA Team", "notes": "Contoh hostname salah" },
+    { "domain": "untrusted-root.badssl.com", "environment": "Development", "application": "Test App", "owner": "QA Team", "notes": "Contoh root CA tidak dipercaya" },
+    { "domain": "incomplete-chain.badssl.com", "environment": "Development", "application": "Test App", "owner": "QA Team" },
+    { "domain": "tidak-ada.contoh-domain.invalid", "environment": "Others", "application": "Test App", "owner": "QA Team", "notes": "Contoh DNS tidak ditemukan" }
+  ]
+}

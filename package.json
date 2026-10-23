@@ -1,0 +1,30 @@
+{
+  "name": "ssl-monitoring",
+  "version": "2.0.0",
+  "private": true,
+  "type": "module",
+  "description": "SSL certificate monitoring (versi lokal) — Source of Truth Excel, database SQLite",
+  "scripts": {
+    "dev": "next dev -H 127.0.0.1 -p 3000",
+    "dev:lan": "next dev -H 0.0.0.0 -p 3000",
+    "build": "next build",
+    "start": "node scripts/serve.js",
+    "start:lan": "node scripts/serve.js --lan",
+    "start:raw": "next start -H 127.0.0.1 -p 3000",
+    "sample:excel": "node scripts/make-sample-excel.js",
+    "scan": "node --no-warnings scripts/scan.js",
+    "reset": "node --no-warnings scripts/reset.js",
+    "reset-admin": "node --no-warnings scripts/reset-admin.js"
+  },
+  "engines": {
+    "node": ">=22.13"
+  },
+  "dependencies": {
+    "lucide-react": "^0.460.0",
+    "next": "^15.1.0",
+    "nodemailer": "^10.2.1",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0",
+    "xlsx": "^0.18.5"
+  }
+}

@@ -1,0 +1,20 @@
+node_modules/
+.next/
+out/
+
+# database & file upload lokal — JANGAN di-push ke GitHub
+data/*.db
+data/*.db-*
+data/uploads/
+data/settings.json
+
+# rahasia
+.env
+.env.local
+.env.*.local
+
+.DS_Store
+Thumbs.db
+*.log
+
+data/logs/

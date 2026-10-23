@@ -1,0 +1,204 @@
+<!--
+  Rules Wazuh untuk SSL Monitoring.
+  Pasang di Wazuh manager:  /var/ossec/etc/rules/ssl_monitoring_rules.xml
+  lalu:                     systemctl restart wazuh-manager
+  (atau lewat dashboard: Server management → Rules → Add new rules file)
+
+  Event dikirim sebagai JSON (decoder "json" bawaan Wazuh) dengan field utama:
+    app=ssl-monitoring, log_type=app|security|ssl, action, outcome=success|failure, severity,
+    actor, src_ip, target, summary; untuk SSL: ssl_status (EXPIRED|URGENT|REMINDER|NEED_UPDATE|WARNING|INFORMATIONAL|CHECK_FAILED|OK),
+    domain, port, days_remaining, expires_at, issuer, group, file
+  ID rule 100700–100749. Ubah bila bentrok dengan rules lokal Anda.
+-->
+<group name="ssl_monitoring,">
+
+  <!-- dasar: semua event dari SSL Monitoring -->
+  <rule id="100700" level="0">
+    <decoded_as>json</decoded_as>
+    <field name="app">^ssl-monitoring$</field>
+    <description>SSL Monitoring: event</description>
+  </rule>
+
+  <!-- ===================== Log aplikasi ===================== -->
+  <rule id="100701" level="3">
+    <if_sid>100700</if_sid>
+    <field name="log_type">^app$</field>
+    <description>SSL Monitoring [app] $(action): $(summary)</description>
+    <group>ssl_monitoring_app,</group>
+  </rule>
+
+  <rule id="100702" level="5">
+    <if_sid>100701</if_sid>
+    <field name="outcome">^failure$</field>
+    <description>SSL Monitoring [app] gagal: $(summary)</description>
+    <group>ssl_monitoring_app,</group>
+  </rule>
+
+  <!-- ===================== Log keamanan ===================== -->
+  <rule id="100710" level="3">
+    <if_sid>100700</if_sid>
+    <field name="log_type">^security$</field>
+    <description>SSL Monitoring [security] $(action) oleh $(actor): $(summary)</description>
+    <group>ssl_monitoring_security,</group>
+  </rule>
+
+  <rule id="100711" level="3">
+    <if_sid>100710</if_sid>
+    <field name="action" type="pcre2">^auth\.login(-microsoft)?$</field>
+    <field name="outcome">^success$</field>
+    <description>SSL Monitoring: login berhasil $(actor) dari $(src_ip)</description>
+    <group>authentication_success,pci_dss_10.2.5,gdpr_IV_32.2,</group>
+  </rule>
+
+  <rule id="100712" level="5">
+    <if_sid>100710</if_sid>
+    <field name="action" type="pcre2">^auth\.login(-microsoft)?$</field>
+    <field name="outcome">^failure$</field>
+    <description>SSL Monitoring: login gagal untuk $(target) dari $(src_ip)</description>
+    <group>authentication_failed,pci_dss_10.2.4,pci_dss_10.2.5,gdpr_IV_35.7.d,</group>
+  </rule>
+
+  <rule id="100713" level="10" frequency="5" timeframe="300">
+    <if_matched_sid>100712</if_matched_sid>
+    <same_field>src_ip</same_field>
+    <description>SSL Monitoring: kemungkinan brute force — 5 login gagal dalam 5 menit dari $(src_ip)</description>
+    <mitre><id>T1110</id></mitre>
+    <group>authentication_failures,pci_dss_11.4,pci_dss_10.2.4,gdpr_IV_35.7.d,</group>
+  </rule>
+
+  <rule id="100714" level="10">
+    <if_sid>100710</if_sid>
+    <field name="action">^auth.locked$</field>
+    <description>SSL Monitoring: akun $(target) terkunci karena terlalu banyak login gagal (dari $(src_ip))</description>
+    <mitre><id>T1110</id></mitre>
+    <group>authentication_failures,pci_dss_10.2.4,</group>
+  </rule>
+
+  <rule id="100715" level="8">
+    <if_sid>100710</if_sid>
+    <field name="action" type="pcre2">^user\.(add|delete|update|reset-password|setup)$</field>
+    <description>SSL Monitoring: perubahan akun user — $(summary) (oleh $(actor))</description>
+    <mitre><id>T1098</id></mitre>
+    <group>account_changed,pci_dss_8.1.2,pci_dss_10.2.5,gdpr_IV_32.2,</group>
+  </rule>
+
+  <rule id="100716" level="3">
+    <if_sid>100710</if_sid>
+    <field name="action">^user.password$</field>
+    <description>SSL Monitoring: $(actor) mengganti password</description>
+    <group>pci_dss_8.2.4,</group>
+  </rule>
+
+  <rule id="100717" level="7">
+    <if_sid>100710</if_sid>
+    <field name="action" type="pcre2">^settings\.update$</field>
+    <description>SSL Monitoring: pengaturan diubah — $(target) (oleh $(actor))</description>
+    <group>config_changed,pci_dss_10.2.7,</group>
+  </rule>
+
+  <rule id="100718" level="10">
+    <if_sid>100710</if_sid>
+    <field name="action">^soar.auth$</field>
+    <field name="outcome">^failure$</field>
+    <description>SSL Monitoring: request SOAR dengan API key salah dari $(src_ip)</description>
+    <group>authentication_failed,</group>
+  </rule>
+
+  <rule id="100719" level="8">
+    <if_sid>100710</if_sid>
+    <field name="action">^soar.token$</field>
+    <description>SSL Monitoring: API key SOAR (SOAR → aplikasi) dibuat ulang oleh $(actor)</description>
+    <group>config_changed,</group>
+  </rule>
+
+  <rule id="100720" level="9">
+    <if_sid>100710</if_sid>
+    <field name="action">^data.clear$</field>
+    <description>SSL Monitoring: data dikosongkan oleh $(actor)</description>
+    <mitre><id>T1485</id></mitre>
+    <group>pci_dss_10.2.7,</group>
+  </rule>
+
+  <rule id="100721" level="5">
+    <if_sid>100710</if_sid>
+    <field name="action" type="pcre2">^export\.</field>
+    <description>SSL Monitoring: data di-export oleh $(actor) — $(summary)</description>
+  </rule>
+
+  <rule id="100722" level="6">
+    <if_sid>100710</if_sid>
+    <field name="action" type="pcre2">^service\.restart</field>
+    <description>SSL Monitoring: service di-restart oleh $(actor)</description>
+  </rule>
+
+  <rule id="100723" level="5">
+    <if_sid>100710</if_sid>
+    <field name="outcome">^failure$</field>
+    <description>SSL Monitoring [security] gagal: $(summary)</description>
+  </rule>
+
+  <!-- ===================== Temuan sertifikat SSL ===================== -->
+  <rule id="100730" level="3">
+    <if_sid>100700</if_sid>
+    <field name="log_type">^ssl$</field>
+    <description>SSL Monitoring: $(summary)</description>
+    <group>ssl_monitoring_cert,</group>
+  </rule>
+
+  <rule id="100731" level="3">
+    <if_sid>100730</if_sid>
+    <field name="ssl_status">^INFORMATIONAL$</field>
+    <description>Sertifikat SSL $(domain) habis dalam $(days_remaining) hari (Informational)</description>
+    <group>ssl_monitoring_cert,</group>
+  </rule>
+
+  <rule id="100736" level="5">
+    <if_sid>100730</if_sid>
+    <field name="ssl_status">^WARNING$</field>
+    <description>Sertifikat SSL $(domain) habis dalam $(days_remaining) hari (Warning Update)</description>
+    <group>ssl_monitoring_cert,</group>
+  </rule>
+
+  <rule id="100737" level="6">
+    <if_sid>100730</if_sid>
+    <field name="ssl_status">^NEED_UPDATE$</field>
+    <description>Sertifikat SSL $(domain) perlu diperbarui: habis dalam $(days_remaining) hari ($(expires_at))</description>
+    <group>ssl_monitoring_cert,</group>
+  </rule>
+
+  <rule id="100738" level="8">
+    <if_sid>100730</if_sid>
+    <field name="ssl_status">^REMINDER$</field>
+    <description>Reminder: sertifikat SSL $(domain) habis dalam $(days_remaining) hari ($(expires_at))</description>
+    <group>ssl_monitoring_cert,</group>
+  </rule>
+
+  <rule id="100732" level="8">
+    <if_sid>100730</if_sid>
+    <field name="ssl_status">^CHECK_FAILED$</field>
+    <description>Sertifikat SSL $(domain) tidak bisa dicek: $(error)</description>
+    <group>ssl_monitoring_cert,</group>
+  </rule>
+
+  <rule id="100733" level="10">
+    <if_sid>100730</if_sid>
+    <field name="ssl_status">^URGENT$</field>
+    <description>URGENT: sertifikat SSL $(domain) habis dalam $(days_remaining) hari ($(expires_at))</description>
+    <group>ssl_monitoring_cert,</group>
+  </rule>
+
+  <rule id="100734" level="12">
+    <if_sid>100730</if_sid>
+    <field name="ssl_status">^EXPIRED$</field>
+    <description>EXPIRED: sertifikat SSL $(domain) sudah habis masa berlakunya ($(expires_at))</description>
+    <group>ssl_monitoring_cert,</group>
+  </rule>
+
+  <rule id="100735" level="3">
+    <if_sid>100730</if_sid>
+    <field name="action">^ssl.resolved$</field>
+    <description>Sertifikat SSL $(domain) kembali normal</description>
+    <group>ssl_monitoring_cert,</group>
+  </rule>
+
+</group>
