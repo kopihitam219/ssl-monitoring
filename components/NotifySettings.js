@@ -131,9 +131,9 @@ export function ChannelCard({ def, cur, put, saving, setMsg, page = false }) {
 
 export default function NotifySettings({ settings, put, saving, setMsg }) {
   const n = settings.notify;
-  const [g, setG] = useState({ alertStatuses: n.alertStatuses, alertRepeatHours: n.alertRepeatHours, reportAllOk: n.reportAllOk, systemRepeatHours: n.systemRepeatHours });
-  useEffect(() => setG({ alertStatuses: n.alertStatuses, alertRepeatHours: n.alertRepeatHours, reportAllOk: n.reportAllOk, systemRepeatHours: n.systemRepeatHours }), [n]);
-  const dirty = JSON.stringify(g) !== JSON.stringify({ alertStatuses: n.alertStatuses, alertRepeatHours: n.alertRepeatHours, reportAllOk: n.reportAllOk, systemRepeatHours: n.systemRepeatHours });
+  const [g, setG] = useState({ alertStatuses: n.alertStatuses, alertRepeatHours: n.alertRepeatHours, reportAllOk: n.reportAllOk, reportOnManual: n.reportOnManual, systemRepeatHours: n.systemRepeatHours });
+  useEffect(() => setG({ alertStatuses: n.alertStatuses, alertRepeatHours: n.alertRepeatHours, reportAllOk: n.reportAllOk, reportOnManual: n.reportOnManual, systemRepeatHours: n.systemRepeatHours }), [n]);
+  const dirty = JSON.stringify(g) !== JSON.stringify({ alertStatuses: n.alertStatuses, alertRepeatHours: n.alertRepeatHours, reportAllOk: n.reportAllOk, reportOnManual: n.reportOnManual, systemRepeatHours: n.systemRepeatHours });
   const toggle = (k) => setG({ ...g, alertStatuses: g.alertStatuses.includes(k) ? g.alertStatuses.filter((x) => x !== k) : [...g.alertStatuses, k] });
 
   return (
@@ -159,10 +159,11 @@ export default function NotifySettings({ settings, put, saving, setMsg }) {
           <label className="field"><span>Kirim ulang alert tiap (jam)</span><input type="number" min="1" max="720" value={g.alertRepeatHours} onChange={(e) => setG({ ...g, alertRepeatHours: e.target.value })} /></label>
           <label className="field"><span>Ingatkan masalah sistem tiap (jam)</span><input type="number" min="1" max="720" value={g.systemRepeatHours} onChange={(e) => setG({ ...g, systemRepeatHours: e.target.value })} /></label>
           <label className="check"><input type="checkbox" checked={g.reportAllOk} onChange={(e) => setG({ ...g, reportAllOk: e.target.checked })} /> Hasil scan scheduler tetap dikirim walau semua aman</label>
+          <label className="check"><input type="checkbox" checked={g.reportOnManual} onChange={(e) => setG({ ...g, reportOnManual: e.target.checked })} /> Laporan hasil scan juga dikirim saat scan dijalankan manual (Sync Now / Jobs)</label>
         </div>
         <div className="toolbar">
           <button className="btn primary" disabled={!dirty || saving || !g.alertStatuses.length} onClick={() => put({ notify: g }, 'Pengaturan isi notifikasi disimpan.')}><Save size={15} /> Simpan isi notifikasi</button>
-          {dirty && <button className="link small" onClick={() => setG({ alertStatuses: n.alertStatuses, alertRepeatHours: n.alertRepeatHours, reportAllOk: n.reportAllOk, systemRepeatHours: n.systemRepeatHours })}>Batal</button>}
+          {dirty && <button className="link small" onClick={() => setG({ alertStatuses: n.alertStatuses, alertRepeatHours: n.alertRepeatHours, reportAllOk: n.reportAllOk, reportOnManual: n.reportOnManual, systemRepeatHours: n.systemRepeatHours })}>Batal</button>}
         </div>
       </div>
 

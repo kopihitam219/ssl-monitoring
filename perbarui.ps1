@@ -134,9 +134,16 @@ try {
     if (-not $adaUbahan) {
       Info "Tidak ada perubahan untuk dikirim (versi di GitHub sudah sama)."
     } else {
-      git commit -q -m "Perbaiki scan gagal di Vercel karena zona waktu :UTC + tampilan HP (v$versiBaru)"
-      git push origin HEAD 2>&1 | ForEach-Object { Info $_ }
-      if ($LASTEXITCODE -ne 0) { Fail "Push ke GitHub gagal. Pesan di atas biasanya menjelaskan sebabnya (login GitHub / nama repo)." }
+      git commit -q -m "Perbarui ke versi $versiBaru"
+      # git menulis kemajuan push ke stderr; tanpa ini PowerShell menampilkannya sebagai error
+      # merah walaupun push-nya berhasil. Yang menentukan sukses atau gagal hanya $LASTEXITCODE.
+      $simpanEA = $ErrorActionPreference
+      $ErrorActionPreference = 'Continue'
+      $keluaran = & git push origin HEAD 2>&1
+      $kodePush = $LASTEXITCODE
+      $ErrorActionPreference = $simpanEA
+      $keluaran | ForEach-Object { Info "$_" }
+      if ($kodePush -ne 0) { Fail "Push ke GitHub gagal. Pesan di atas biasanya menjelaskan sebabnya (login GitHub / nama repo)." }
       Ok "Terkirim ke GitHub. Vercel akan deploy ulang sendiri dalam 1-3 menit."
     }
   }

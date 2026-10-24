@@ -225,8 +225,12 @@ Di **Settings → Integrasi** ada deretan ikon: **WhatsApp, Telegram, Email, SOA
 | Jenis | Isi | Kapan dikirim |
 |---|---|---|
 | **Alert SSL** | domain dengan status yang dipilih (default *Check Failed* & *Urgent Renewal*) + domain yang sudah pulih | setelah setiap scan; domain yang sama hanya dikirim lagi kalau statusnya berubah atau tiap N jam (default 24) selama masih bermasalah |
-| **Hasil scan scheduler** | ringkasan jumlah per status + daftar domain bermasalah | setiap scan otomatis (scheduler), juga lewat *Jobs → Kirim notifikasi sekarang* |
+| **Hasil scan** | ringkasan jumlah per status + daftar domain bermasalah | setiap scan otomatis (scheduler / Vercel Cron), **dan setiap scan manual** (Sync Now / Jobs) selama *Laporan juga dikirim saat scan dijalankan manual* masih dicentang di Settings → Isi notifikasi; juga lewat *Jobs → Kirim notifikasi sekarang* |
 | **Info sistem bermasalah** | scan gagal / macet, database bermasalah, CPU / RAM / Disk ≥ 95%, saluran notifikasi gagal kirim — dan pesan *Sistem kembali normal* saat pulih | dicek tiap 5 menit; masalah yang belum pulih diingatkan tiap N jam (default 6) |
+
+Semua saluran aktif dikirimi **serentak**, bukan antre satu per satu, sehingga satu gerbang yang lambat tidak menahan saluran lain dan tidak membuat scan melewati batas 60 detik di Vercel.
+
+> Kalau menekan **Sync Now** dua kali berturut-turut, yang kedua hanya mengirim *Hasil scan*, bukan *Alert SSL*. Itu disengaja: domain yang sama baru dialert lagi kalau statusnya berubah atau setelah lewat N jam, supaya tim tidak dibanjiri pesan yang sama.
 
 Saluran:
 
