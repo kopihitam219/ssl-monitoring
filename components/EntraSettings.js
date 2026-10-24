@@ -18,7 +18,7 @@ export default function EntraSettings({ settings, put, saving, setMsg, page = fa
   useEffect(() => { setF({ ...settings.entra }); }, [settings.entra]);
 
   const set = (k) => (e) => setF({ ...f, [k]: e.target.type === 'checkbox' ? e.target.checked : e.target.value });
-  const keys = ['enabled', 'tenantId', 'clientId', 'adminGroupId', 'monitoringGroupId', 'autoSync', 'redirectUri'];
+  const keys = ['enabled', 'tenantId', 'clientId', 'adminGroupId', 'monitoringGroupId', 'autoSync', 'redirectUri', 'secretExpiresAt'];
   const dirty = !!secret || keys.some((k) => String(f[k] ?? '') !== String(s[k] ?? ''));
   const redirect = f.redirectUri || `${origin}/api/auth/microsoft/callback`;
 
@@ -75,7 +75,12 @@ export default function EntraSettings({ settings, put, saving, setMsg, page = fa
           <span>Client secret</span>
           <input type="password" value={secret} onChange={(e) => setSecret(e.target.value)} autoComplete="new-password"
             placeholder={s.secretSet ? `Tersimpan (${s.secretHint}) · isi untuk mengganti` : 'Value dari Certificates & secrets'} />
-          <small className="muted">Disimpan hanya di laptop ini (data/settings.json). Secret Microsoft punya masa berlaku. Perbarui sebelum habis.</small>
+          <small className="muted">Secret Microsoft punya masa berlaku. Perbarui sebelum habis.</small>
+        </label>
+        <label className="field">
+          <span>Client secret habis pada</span>
+          <input type="date" value={f.secretExpiresAt ?? ''} onChange={set('secretExpiresAt')} />
+          <small className="muted">Lihat kolom Expires di Azure Portal → Certificates &amp; secrets. Health Check memperingatkan 45 hari sebelum habis, supaya login Microsoft tidak mati mendadak.</small>
         </label>
         <label className="field">
           <span>Redirect URI</span>

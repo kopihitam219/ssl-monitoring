@@ -199,6 +199,16 @@ Menu **Health Check** (admin, atau Monitoring yang diberi izin) menampilkan, dan
 - **Status service**: web server, database domain & aplikasi (termasuk waktu respons), scheduler (jadwal scan berikutnya), scan engine (termasuk deteksi scan macet), proxy, Wazuh (antrean & kiriman terakhir), SOAR → aplikasi, Microsoft Entra ID, dan tiap saluran notifikasi (kiriman terakhir berhasil / gagal).
 - **Info sistem**: nama komputer, OS, berapa lama komputer dan aplikasi sudah menyala, versi Node.js, dan ukuran data aplikasi.
 
+### Pemeriksaan kegagalan diam
+
+Selain service yang hidup atau mati, Health Check juga menangkap kondisi di mana aplikasi *terlihat* normal padahal sudah tidak bekerja:
+
+- **Kesegaran data scan** — membandingkan domain yang paling lama tidak diperiksa dengan jadwal scan. *Perhatian* setelah 2× interval, *Bermasalah* setelah 4× interval. Inilah yang menangkap scan yang berhenti diam-diam (cron gagal, scanner kantor mati, lock tidak terlepas) sementara dasbor tetap menampilkan angka lama. Kalau scan otomatis sengaja dimatikan, baris ini hanya informatif.
+- **Domain belum pernah terbaca** — domain yang sejak ditambahkan tidak pernah sekali pun berhasil dibaca, biasanya karena salah ketik di Excel atau domain sudah mati. Berbeda dari Check Failed biasa yang pernah berhasil.
+- **Sertifikat aplikasi ini** — memantau sertifikat alamat aplikasi sendiri, supaya aplikasi pemantau SSL tidak justru mati karena sertifikatnya sendiri kedaluwarsa. Isi alamatnya di **Settings → Aturan status & scan → Alamat aplikasi ini**.
+- **Client secret Entra ID** — client secret Microsoft berumur 6–24 bulan dan habisnya senyap: login SSO tiba-tiba gagal total. Isi tanggalnya di **Settings → Integrasi → Entra ID** (lihat kolom *Expires* di Azure Portal); peringatan muncul 45 hari sebelum habis dan jadi *Bermasalah* pada 14 hari terakhir.
+- **API key SOAR** — mengingatkan rotasi setelah key berumur setahun.
+
 ## 8. Audit Log
 
 Menu **Audit Log** mencatat semua kejadian secara permanen: siapa, kapan, apa, dan nilai **sebelum → sesudah** (klik baris untuk melihat detail). Ada dua tab:

@@ -48,7 +48,7 @@ export default function SettingsView({ onChanged }) {
   const TIER_KEYS = ['urgent', 'reminder', 'needUpdate', 'warning', 'info'];
   const setTier = (k) => (e) => setForm({ ...form, tiers: { ...form.tiers, [k]: e.target.value } });
   const shared = info.runner?.shared || info.runner?.cloud;
-  const dirtyRules = ['scanIntervalHours', 'scanRunner', 'scanConcurrency', 'scanTimeoutMs'].some((k) => String(form[k]) !== String(s[k]))
+  const dirtyRules = ['scanIntervalHours', 'scanRunner', 'scanConcurrency', 'scanTimeoutMs', 'appUrl'].some((k) => String(form[k] ?? '') !== String(s[k] ?? ''))
     || TIER_KEYS.some((k) => String(form.tiers[k]) !== String(s.tiers[k]))
     || String(form.monitoring?.renewalDays) !== String(s.monitoring?.renewalDays);
   if (integration) {
@@ -125,12 +125,17 @@ export default function SettingsView({ onChanged }) {
             <input type="number" min="1" max="365" value={form.monitoring?.renewalDays ?? 30} onChange={(e) => setForm({ ...form, monitoring: { ...form.monitoring, renewalDays: e.target.value } })} />
             <small className="muted">Dashboard Monitoring.</small>
           </label>
+          <label className="field wide">
+            <span>Alamat aplikasi ini</span>
+            <input value={form.appUrl ?? ''} onChange={set('appUrl')} placeholder="https://ssl-monitoring.contoh.co.id" />
+            <small className="muted">Dipakai Health Check untuk ikut memantau sertifikat aplikasi ini sendiri. Kosongkan kalau dijalankan di komputer lokal.</small>
+          </label>
         </div>
         <p className="muted small"><CheckCircle2 size={13} className="h-icon" /> Perubahan ambang langsung berlaku untuk semua domain tanpa perlu scan ulang. Masalah kepercayaan sertifikat (nama tidak cocok, self-signed, root CA) tetap dicatat, tapi statusnya mengikuti sisa hari.</p>
         <div className="toolbar">
           <button className="btn primary" disabled={!dirtyRules || saving} onClick={() => put({
             tiers: Object.fromEntries(TIER_KEYS.map((k) => [k, form.tiers[k]])), scanIntervalHours: form.scanIntervalHours, scanRunner: form.scanRunner,
-            scanConcurrency: form.scanConcurrency, scanTimeoutMs: form.scanTimeoutMs, monitoring: { renewalDays: form.monitoring?.renewalDays },
+            scanConcurrency: form.scanConcurrency, scanTimeoutMs: form.scanTimeoutMs, appUrl: form.appUrl ?? '', monitoring: { renewalDays: form.monitoring?.renewalDays },
           }, 'Aturan disimpan.')}><Save size={15} /> Simpan aturan</button>
           {dirtyRules && <button className="btn ghost" onClick={() => setForm(structuredClone(s))}>Batal</button>}
         </div>

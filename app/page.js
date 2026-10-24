@@ -188,7 +188,7 @@ function App({ user, onSessionChange, onLoggedOut }) {
             <button className="icon-btn" title="Logout" aria-label="Logout" onClick={doLogout}><LogOut size={15} /></button>
           </div>
           <div><i className="dot" style={{ background: error ? 'var(--danger)' : 'var(--ok)' }} /> {error ? 'System Error' : 'System Online'}</div>
-          <div className="muted">v2.1.0 · {data?.deploy || "…"}</div>
+          <div className="muted">v{process.env.NEXT_PUBLIC_APP_VERSION || '2.1'} · {data?.deploy || "…"}</div>
         </div>
       </aside>
       <div className="backdrop" onClick={() => setNavOpen(false)} />
