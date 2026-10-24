@@ -178,7 +178,7 @@ export default function InventoryTable({ title = 'SSL Inventory', subtitle = 'Da
       {error && <div className="alert error">{error}</div>}
 
       <div className="table-wrap">
-        <table>
+        <table className="inv-table">
           <thead>
             <tr>
               {editable && <th className="chk"><input type="checkbox" checked={allOnPage} onChange={toggleAll} aria-label="Pilih semua di halaman ini" /></th>}
@@ -201,9 +201,9 @@ export default function InventoryTable({ title = 'SSL Inventory', subtitle = 'Da
             {data.rows.map((d, i) => (
               <tr key={d.id} className={selected.has(d.id) ? 'sel' : ''}>
                 {editable && <td className="chk"><input type="checkbox" checked={selected.has(d.id)} onChange={() => toggle(d.id)} aria-label={`Pilih ${d.domain}`} /></td>}
-                <td className="muted">{from + i}</td>
-                <td>
-                  <button className="link" onClick={() => setOpenId(d.id)}>{d.domain}</button>
+                <td className="muted cell-no">{from + i}</td>
+                <td className="cell-domain">
+                  <button className="link" onClick={() => setOpenId(d.id)}>{d.domain}{d.port !== 443 ? `:${d.port}` : ''}</button>
                   {(d.checked_via === 'proxy' || d.checked_via === 'fallback') && <span className="dom-tags"><ViaTag via={d.checked_via} /></span>}
                   {d.last_error && (d.status === 'CHECK_FAILED'
                     ? <div className="err-line" title={d.last_error}>{d.last_error}</div>
@@ -211,17 +211,17 @@ export default function InventoryTable({ title = 'SSL Inventory', subtitle = 'Da
                   {!d.last_error && d.subject && d.subject.toLowerCase() !== d.domain && !d.subject.startsWith('*.') && <div className="cert-name" title="Nama di sertifikat (Common Name)">sertifikat: {d.subject}</div>}
                   {d.status === 'CHECK_FAILED' && connLine(d.conn_test) && (() => { const c = connLine(d.conn_test); return <div className={`conn-line ${c.level}`} title={c.conclusion}>Tes koneksi: {c.text}</div>; })()}
                 </td>
-                {showFile && <td className="small"><span className="file-chip" title={d.proxy_mode === 'proxy' ? 'Dengan proxy' : 'Tanpa proxy (otomatis coba proxy kalau gagal)'}>{d.file_name || '—'}</span>{d.group_name && <div className="muted small">{d.group_name}</div>}</td>}
-                <td>{d.environment || <span className="muted">—</span>}</td>
-                <td>{d.application || <span className="muted">—</span>}</td>
-                <td>{d.owner || <span className="muted">—</span>}</td>
-                <td>{d.port}</td>
-                <td><StatusBadge status={d.status} /></td>
-                <td className={d.days_remaining < 0 ? 'txt-danger' : ''}>{d.expires_at ? fmtExpiresIn(d.days_remaining) : <span className="muted">—</span>}</td>
-                <td className={d.days_remaining < 0 ? 'txt-danger' : ''}>{d.expires_at ? fmtDate(d.expires_at) : <span className="muted">—</span>}</td>
-                <td className="small">{d.issuer || <span className="muted">—</span>}</td>
-                <td className="small">{fmtDateTime(d.last_checked)}</td>
-                <td>
+                {showFile && <td className="small" data-label="File"><span className="file-chip" title={d.proxy_mode === 'proxy' ? 'Dengan proxy' : 'Tanpa proxy (otomatis coba proxy kalau gagal)'}>{d.file_name || '—'}</span>{d.group_name && <div className="muted small">{d.group_name}</div>}</td>}
+                <td data-label="Environment">{d.environment || <span className="muted">—</span>}</td>
+                <td className="cell-opt" data-label="Application">{d.application || <span className="muted">—</span>}</td>
+                <td data-label="Owner">{d.owner || <span className="muted">—</span>}</td>
+                <td className="cell-port" data-label="Port">{d.port}</td>
+                <td className="cell-status"><StatusBadge status={d.status} /></td>
+                <td className={`cell-exp ${d.days_remaining < 0 ? 'txt-danger' : ''}`} data-label="Sisa">{d.expires_at ? fmtExpiresIn(d.days_remaining) : <span className="muted">—</span>}</td>
+                <td className={d.days_remaining < 0 ? 'txt-danger' : ''} data-label="Tanggal expired">{d.expires_at ? fmtDate(d.expires_at) : <span className="muted">—</span>}</td>
+                <td className="small cell-opt" data-label="Issuer">{d.issuer || <span className="muted">—</span>}</td>
+                <td className="small cell-opt" data-label="Terakhir dicek">{fmtDateTime(d.last_checked)}</td>
+                <td className="cell-actions">
                   <span className="row-actions">
                     <button className="icon-btn" onClick={() => setOpenId(d.id)} aria-label={`Detail ${d.domain}`} title="Detail"><Eye size={16} /></button>
                     {editable && <button className="icon-btn" onClick={() => setEditing(d)} aria-label={`Ubah ${d.domain}`} title="Ubah"><Pencil size={15} /></button>}

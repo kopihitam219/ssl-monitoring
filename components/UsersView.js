@@ -144,16 +144,16 @@ export default function UsersView() {
             <tbody>
               {data.users.map((u) => (
                 <tr key={u.id}>
-                  <td><b>{u.username}</b>{u.id === me.id && <span className="pill">Anda</span>}{u.authSource === 'entra' && <span className="ms-badge">Entra ID</span>}</td>
-                  <td>{u.name || <span className="muted">—</span>}</td>
-                  <td><span className={`role-badge ${u.role}`}>{u.role === 'admin' ? <ShieldCheck size={12} /> : <Eye size={12} />} {ROLE_LABEL[u.role]}</span></td>
-                  <td>
+                  <td className="cell-domain"><b>{u.username}</b>{u.id === me.id && <span className="pill">Anda</span>}{u.authSource === 'entra' && <span className="ms-badge">Entra ID</span>}</td>
+                  <td data-label="Nama">{u.name || <span className="muted">—</span>}</td>
+                  <td className="cell-status" data-label="Peran"><span className={`role-badge ${u.role}`}>{u.role === 'admin' ? <ShieldCheck size={12} /> : <Eye size={12} />} {ROLE_LABEL[u.role]}</span></td>
+                  <td data-label="Status">
                     {u.active ? <span className="run-state ok">Aktif</span> : <span className="run-state bad">Nonaktif</span>}
                     {u.mustChange && <div className="muted small">wajib ganti password</div>}
                   </td>
-                  <td className="small">{u.lastLogin ? fmtDateTime(u.lastLogin) : <span className="muted">Belum pernah</span>}</td>
-                  <td className="small">{fmtDateTime(u.createdAt)}<div className="muted">oleh {u.createdBy || '—'}</div></td>
-                  <td>
+                  <td className="small" data-label="Login terakhir">{u.lastLogin ? fmtDateTime(u.lastLogin) : <span className="muted">Belum pernah</span>}</td>
+                  <td className="small cell-opt" data-label="Dibuat">{fmtDateTime(u.createdAt)}<div className="muted">oleh {u.createdBy || '—'}</div></td>
+                  <td className="cell-actions">
                     <span className="row-actions">
                       <button className="icon-btn" title="Ubah" aria-label={`Ubah ${u.username}`} onClick={() => setForm(u)}><Pencil size={15} /></button>
                       <button className="icon-btn" title={u.authSource === 'entra' ? 'Password dikelola Microsoft Entra ID' : 'Reset password'} aria-label={`Reset password ${u.username}`} disabled={u.authSource === 'entra'} onClick={() => setReset(u)}><KeyRound size={15} /></button>

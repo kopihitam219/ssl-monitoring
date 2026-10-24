@@ -786,3 +786,161 @@ table.files-table select { padding: 5px 8px; font-size: 12.5px; }
 .scanner-chip i { width: 8px; height: 8px; border-radius: 50%; background: var(--muted); }
 .scanner-chip.on { color: var(--text); border-color: color-mix(in srgb, var(--ok) 45%, transparent); }
 .scanner-chip.on i { background: var(--ok); box-shadow: 0 0 0 3px color-mix(in srgb, var(--ok) 25%, transparent); }
+
+/* =======================================================================
+   Tampilan HP (≤ 760px)
+   - app bar menempel di atas, judul 1 baris, aksi jadi ikon
+   - tabel berubah jadi kartu supaya terbaca tanpa geser ke samping
+   ======================================================================= */
+@media (max-width: 760px) {
+  main { padding: 0 14px 28px; }
+
+  /* ---------- app bar ---------- */
+  .topbar { position: sticky; top: 0; z-index: 25; flex-wrap: nowrap; gap: 8px; align-items: center;
+    margin: 0 -14px 14px; padding: 10px 14px; border-bottom: 1px solid var(--line);
+    background: color-mix(in srgb, var(--bg) 90%, transparent); backdrop-filter: blur(10px); }
+  .topbar .icon-btn.menu { width: 38px; height: 38px; flex: none; }
+  .page-title h1 { font-size: 18px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .page-title p { display: none; }
+  .top-actions { width: auto; margin-left: auto; gap: 6px; flex: none; }
+  .top-actions .btn { margin-left: 0; }
+  /* periode & Sync Now jadi ikon saja (teks disembunyikan dengan font-size 0) */
+  .topbar .period { flex: none; }
+  .topbar .period .chip { display: inline-grid; place-items: center; gap: 0; width: 38px; height: 38px; padding: 0; font-size: 0; }
+  .topbar .period .chip svg:last-of-type { display: none; }
+  .topbar .top-actions .icon-btn { width: 38px; height: 38px; }
+  .topbar .top-actions .btn.primary { display: inline-grid; place-items: center; gap: 0; width: 38px; height: 38px; padding: 0; font-size: 0; }
+  .period-pop { left: auto; right: 0; width: min(320px, calc(100vw - 28px)); }
+
+  /* ---------- tab dashboard: geser ke samping ---------- */
+  .dash-switch { display: flex; flex-wrap: nowrap; overflow-x: auto; scroll-snap-type: x proximity; -webkit-overflow-scrolling: touch;
+    margin: 0 -14px 14px; padding: 4px 14px; border: 0; border-radius: 0; background: none; }
+  .dash-switch::-webkit-scrollbar { display: none; }
+  .dash-switch button { flex: none; scroll-snap-align: start; padding: 9px 14px; font-size: 13.5px; border: 1px solid var(--line); background: var(--panel); }
+  .dash-switch button.on { border-color: transparent; }
+  .dash-switch .sep, .dash-switch .grp { display: none; }
+
+  /* ---------- kartu status (KPI) ---------- */
+  .kpis { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+  .kpi { padding: 12px 11px; gap: 9px; align-items: flex-start; }
+  .kpi-icon { width: 30px; height: 30px; }
+  .kpi-icon svg { width: 17px; height: 17px; }
+  .kpi-label { font-size: 12px; line-height: 1.25; }
+  .kpi-value { font-size: 23px; }
+  .kpi-sub { white-space: normal; font-size: 11px; line-height: 1.3; }
+  .kpi-sub + .kpi-sub { display: none; }
+  .kpi .kpi-arrow { display: none; }
+  .mon-kpi { padding: 11px; gap: 9px; }
+  .mon-kpi-icon { width: 32px; height: 32px; }
+  .mon-kpi-value { font-size: 22px; }
+  .gd-kpis { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+
+  /* ---------- panel ---------- */
+  .panel { padding: 14px; }
+  .panel-head { flex-direction: column; align-items: stretch; gap: 10px; }
+  .panel-head .toolbar { width: 100%; }
+  .panel-head p.small, .panel > p.muted.small { font-size: 12px; line-height: 1.45; }
+  .panel-head h2 + p { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+  .toolbar .search, .toolbar .file-select { flex: 1 1 100%; }
+  .toolbar select { flex: 1 1 100%; }
+  .audit-filters select { flex: 1 1 calc(50% - 4px); min-width: 0; }
+  .audit-filters .date-range { flex: 1 1 100%; }
+  .toolbar .btn { flex: 1 1 calc(50% - 4px); justify-content: center; }
+  .file-select select { max-width: none; width: 100%; }
+
+  /* ---------- tabel → kartu ---------- */
+  .table-wrap { overflow-x: visible; margin: 0; }
+  .table-wrap > table { display: block; }
+  .table-wrap > table > thead { display: none; }
+  .table-wrap > table > tbody { display: block; }
+  .table-wrap > table > tbody > tr { display: flex; flex-direction: column; position: relative; margin-bottom: 10px; padding: 12px 12px 10px;
+    border: 1px solid var(--line); border-radius: 12px; background: var(--panel-2); }
+  .table-wrap > table > tbody > tr.sel { border-color: color-mix(in srgb, var(--primary) 60%, transparent); }
+  .table-wrap > table > tbody > tr > td { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 2px 12px;
+    padding: 4px 0; border: 0; white-space: normal; font-size: 13px; text-align: right; }
+  .table-wrap > table > tbody > tr > td[data-label]::before { content: attr(data-label); grid-column: 1; grid-row: 1;
+    color: var(--muted); font-size: 12px; text-align: left; }
+  /* nilai (chip, badge, keterangan tambahan) ditumpuk rapi di sisi kanan */
+  .table-wrap > table > tbody > tr > td[data-label] > * { grid-column: 2; justify-self: end; }
+  .table-wrap > table > tbody > tr > td:not([data-label]):not([class*="cell-"]):not(.chk) { display: none; }
+
+  .table-wrap > table > tbody > tr > td.cell-domain { display: block; padding: 0 112px 7px 0; font-size: 15px; text-align: left; line-height: 1.35; }
+  .table-wrap > table > tbody > tr > td.cell-domain .link,
+  .table-wrap > table > tbody > tr > td.cell-domain b { font-size: 15px; font-weight: 600; }
+  .table-wrap > table > tbody > tr > td.cell-status { position: absolute; top: 11px; right: 12px; display: block; padding: 0; max-width: 108px; text-align: right; }
+  .table-wrap > table > tbody > tr > td.cell-status .run-state,
+  .table-wrap > table > tbody > tr > td.cell-status .svc-state { white-space: nowrap; }
+  .table-wrap > table > tbody > tr > td.cell-status::before { content: none; }  /* badge sudah menjelaskan sendiri */
+  .table-wrap > table > tbody > tr > td.cell-no,
+  .table-wrap > table > tbody > tr > td.cell-port,
+  .table-wrap > table > tbody > tr > td.cell-opt { display: none; }  /* ada di detail domain */
+  .table-wrap > table > tbody > tr > td.cell-domain { order: -2; }
+  .table-wrap > table > tbody > tr > td.cell-note { order: 1; display: block; text-align: left; padding: 7px 0 0; color: var(--muted); font-size: 12.5px; }
+  .table-wrap > table > tbody > tr > td.cell-note::before { content: none; }
+  .table-wrap > table > tbody > tr > td.cell-exp { font-weight: 600; }
+  .table-wrap > table > tbody > tr > td.cell-actions { order: 2; display: flex; justify-content: flex-end; gap: 8px; margin-top: 9px; padding-top: 10px; border-top: 1px solid var(--line); }
+  .table-wrap > table > tbody > tr > td.cell-actions .icon-btn { width: 38px; height: 38px; }
+  .table-wrap > table > tbody > tr > td.chk { position: absolute; left: 12px; top: 13px; width: auto; padding: 0; display: block; }
+  .table-wrap > table > tbody > tr:has(td.chk) > td.cell-domain { padding-left: 28px; }
+  .table-wrap > table > tbody > tr > td.empty { display: block; text-align: center; padding: 20px 0; }
+  .table-wrap > table > tbody > tr:has(td.empty) { background: none; border-style: dashed; }
+  .wrap-cell { min-width: 0; }
+  .err-line, .warn-line, .conn-line, .cert-name { white-space: normal; }
+
+  /* audit: baris bisa diklik untuk melihat detail */
+  .table-wrap > table > tbody > tr > td.caret-cell { position: absolute; right: 12px; bottom: 10px; display: block; padding: 0; width: auto; }
+  table.audit tr.detail-row { padding-top: 0; margin-top: -8px; border-top-left-radius: 0; border-top-right-radius: 0; }
+  table.audit tr.detail-row td.caret-cell { display: none; }
+  table.changes { min-width: 0; width: 100%; }
+
+  .table-foot { flex-direction: column; align-items: stretch; gap: 10px; }
+  .pager { justify-content: center; flex-wrap: wrap; }
+  .pager button { min-width: 36px; height: 36px; }
+
+  /* ---------- jobs ---------- */
+  .job { flex-direction: column; align-items: stretch; gap: 10px; }
+  .job .btn { width: 100%; justify-content: center; }
+  .svc-grid { grid-template-columns: 1fr 1fr; gap: 10px 14px; }
+  .svc-grid dd { font-size: 13px; }
+
+  /* ---------- panel detail (drawer) & dialog ---------- */
+  .drawer { width: 100%; border-left: 0; padding: 16px 16px 28px; }
+  .kv div { grid-template-columns: 1fr; gap: 2px; padding: 8px 0; }
+  .kv dt { font-size: 12px; }
+  .drawer-actions { grid-template-columns: 1fr; }
+  .drawer-actions .btn { width: 100%; justify-content: center; }
+
+  .modal-backdrop { place-items: end stretch; padding: 0; }
+  .modal { width: 100%; max-width: none; border-radius: 16px 16px 0 0; border-bottom: 0; max-height: 92vh; padding: 18px 16px calc(18px + env(safe-area-inset-bottom)); }
+  .modal-foot { flex-direction: column-reverse; }
+  .modal-foot .btn { width: 100%; justify-content: center; }
+
+  /* ---------- menu samping ---------- */
+  .sidebar { width: min(84vw, 300px); padding-bottom: calc(16px + env(safe-area-inset-bottom)); }
+  .sidebar nav button { padding: 11px 12px; }
+
+  /* ---------- sentuhan jari ---------- */
+  .btn { padding: 10px 14px; }
+  .icon-btn { width: 36px; height: 36px; }
+  .form.grid2, .form.grid3 { grid-template-columns: 1fr; }
+  .intg-grid { grid-template-columns: repeat(2, 1fr); }
+  /* dashboard group */
+  .gd-head { flex-wrap: wrap; gap: 12px; padding: 14px; }
+  .gd-icon { width: 40px; height: 40px; }
+  .gd-title h2 { font-size: 19px; }
+  .gd-chips { gap: 5px; }
+  .gd-chips span { font-size: 11px; padding: 3px 8px; }
+  .gd-actions .btn, .gd-head .btn { flex: 1 1 100%; justify-content: center; }
+  .gd-last { margin-left: 0; flex: 1 1 100%; }
+  .gd-donut { flex-direction: column; align-items: stretch; gap: 12px; }
+  .gd-donut .mon-donut { width: 140px; align-self: center; }
+  .gd-exp li { grid-template-columns: 8px 1fr auto; }
+  .gd-exp li .muted.small { display: none; }
+  .status-pick { padding: 7px 11px; }
+}
+
+@media (max-width: 360px) {
+  .kpis, .gd-kpis, .mon-kpis { grid-template-columns: 1fr; }
+  .kpi-sub + .kpi-sub { display: block; }
+  .toolbar .btn { flex: 1 1 100%; }
+}

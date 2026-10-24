@@ -164,12 +164,12 @@ export default function JobsView({ onChanged }) {
                       const [cls, label] = QSTATUS[q.status] || ['info', q.status];
                       return (
                         <tr key={q.id}>
-                          <td className="small">{q.id}</td>
-                          <td className="small">{fmtDateTime(q.created_at)}</td>
-                          <td>{jobs.jobs.find((x) => x.key === q.job)?.label || (q.job === 'check_ids' ? 'Cek ulang domain' : q.job)}</td>
-                          <td className="small">{q.requested_by || TRIGGER[q.trigger] || q.trigger}</td>
-                          <td><span className={`run-state ${cls}`}>{q.status === 'running' && <Loader2 size={12} className="spin" />}{label}</span></td>
-                          <td className="small wrap-cell">{q.message || (q.status === 'queued' ? 'Menunggu scanner kantor…' : '')}</td>
+                          <td className="small cell-no">{q.id}</td>
+                          <td className="small" data-label="Dibuat">{fmtDateTime(q.created_at)}</td>
+                          <td className="cell-domain">{jobs.jobs.find((x) => x.key === q.job)?.label || (q.job === 'check_ids' ? 'Cek ulang domain' : q.job)}</td>
+                          <td className="small" data-label="Oleh">{q.requested_by || TRIGGER[q.trigger] || q.trigger}</td>
+                          <td className="cell-status"><span className={`run-state ${cls}`}>{q.status === 'running' && <Loader2 size={12} className="spin" />}{label}</span></td>
+                          <td className="small wrap-cell cell-note">{q.message || (q.status === 'queued' ? 'Menunggu scanner kantor…' : '')}</td>
                         </tr>
                       );
                     })}
@@ -227,12 +227,12 @@ export default function JobsView({ onChanged }) {
             <tbody>
               {jobs?.history.map((h) => (
                 <tr key={h.id}>
-                  <td className="small">{fmtDateTime(h.started_at)}</td>
-                  <td>{jobs.jobs.find((x) => x.key === h.job)?.label || jobs.legacyLabels?.[h.job] || h.job.replace(/^soar:/, 'Flow SOAR: ')}</td>
-                  <td className="small">{TRIGGER[h.trigger] || h.trigger}</td>
-                  <td className="small">{duration(h.started_at, h.finished_at)}</td>
-                  <td>{!h.finished_at ? <span className="run-state info">Berjalan</span> : h.ok ? <span className="run-state ok">Berhasil</span> : <span className="run-state bad">Gagal</span>}</td>
-                  <td className="small wrap-cell">{h.message}</td>
+                  <td className="small" data-label="Waktu">{fmtDateTime(h.started_at)}</td>
+                  <td className="cell-domain">{jobs.jobs.find((x) => x.key === h.job)?.label || jobs.legacyLabels?.[h.job] || h.job.replace(/^soar:/, 'Flow SOAR: ')}</td>
+                  <td className="small" data-label="Pemicu">{TRIGGER[h.trigger] || h.trigger}</td>
+                  <td className="small" data-label="Durasi">{duration(h.started_at, h.finished_at)}</td>
+                  <td className="cell-status">{!h.finished_at ? <span className="run-state info">Berjalan</span> : h.ok ? <span className="run-state ok">Berhasil</span> : <span className="run-state bad">Gagal</span>}</td>
+                  <td className="small wrap-cell cell-note">{h.message}</td>
                 </tr>
               ))}
               {jobs && !jobs.history.length && <tr><td colSpan={6} className="empty">Belum ada job yang dijalankan.</td></tr>}

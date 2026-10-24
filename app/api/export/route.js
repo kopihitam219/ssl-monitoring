@@ -2,6 +2,7 @@ import * as XLSX from 'xlsx';
 import { filterDomains } from '@/lib/filter';
 import { audit } from '@/lib/audit';
 import { handle } from '@/lib/api';
+import { isoDate } from '@/lib/time';
 
 export const dynamic = 'force-dynamic';
 
@@ -15,7 +16,7 @@ export const GET = handle(async (req) => {
     Owner: d.owner || '',
     Status: d.status,
     'Sisa Hari': d.days_remaining ?? '',
-    'Tanggal Expired': d.expires_at ? new Date(d.expires_at).toLocaleDateString('en-CA') : '',
+    'Tanggal Expired': d.expires_at ? isoDate(d.expires_at) : '',
     Issuer: d.issuer || '',
     Error: d.last_error || '',
     'Cek lewat': d.checked_via === 'fallback' ? 'Proxy (otomatis, gagal langsung)' : d.checked_via === 'proxy' ? 'Proxy' : d.checked_via === 'direct' ? 'Langsung' : '',
@@ -27,7 +28,7 @@ export const GET = handle(async (req) => {
   const wb = XLSX.utils.book_new();
   XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(rows), 'SSL Inventory');
   const buf = XLSX.write(wb, { type: 'buffer', bookType: 'xlsx' });
-  const name = `ssl_inventory_${new Date().toISOString().slice(0, 10)}.xlsx`;
+  const name = `ssl_inventory_${isoDate()}.xlsx`;
   return new Response(buf, {
     headers: {
       'Content-Type': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',

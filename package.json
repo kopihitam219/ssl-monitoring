@@ -1,6 +1,6 @@
 {
   "name": "ssl-monitoring",
-  "version": "2.1.0",
+  "version": "2.1.1",
   "private": true,
   "type": "module",
   "description": "SSL certificate monitoring — Source of Truth Excel, database Postgres (Supabase atau lokal), siap Vercel",

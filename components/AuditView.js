@@ -227,16 +227,16 @@ export default function AuditView() {
             {data.rows.map((r) => (
               <Fragment key={r.id}>
                 <tr className={`clickable ${open.has(r.id) ? 'open' : ''}`} onClick={() => toggle(r.id)}>
-                  <td className="chk"><ChevronDown size={15} className={`caret ${open.has(r.id) ? 'up' : ''}`} /></td>
-                  <td className="small">{fmtDateTime(r.at)}</td>
-                  <td><span className={`cat cat-${r.category}`}>{CATEGORIES[r.category] || r.category}</span> {ACTIONS[r.action] || (r.action?.startsWith('job.soar.') ? `Jalankan flow ${r.action.slice(9)}` : r.action)}</td>
-                  <td className="small target">{r.target || <span className="muted">—</span>}</td>
-                  <td className="wrap-cell small">{r.summary}</td>
-                  <td className="small">{r.type === 'system' ? <span className="sys-actor">⚙ {r.actor}</span> : r.actor}<div className="muted">{r.source === 'UI' ? 'Dashboard' : r.source === 'Scheduler' ? 'Otomatis' : r.source === 'System' ? 'Sistem' : r.source}{r.ip ? ` · ${r.ip}` : ''}</div></td>
-                  <td>{r.ok ? <span className="run-state ok"><CheckCircle2 size={13} /> Berhasil</span> : <span className="run-state bad"><XCircle size={13} /> Gagal</span>}</td>
+                  <td className="chk caret-cell"><ChevronDown size={15} className={`caret ${open.has(r.id) ? 'up' : ''}`} /></td>
+                  <td className="small" data-label="Waktu">{fmtDateTime(r.at)}</td>
+                  <td className="cell-domain"><span className={`cat cat-${r.category}`}>{CATEGORIES[r.category] || r.category}</span> {ACTIONS[r.action] || (r.action?.startsWith('job.soar.') ? `Jalankan flow ${r.action.slice(9)}` : r.action)}</td>
+                  <td className="small target" data-label="Target">{r.target || <span className="muted">—</span>}</td>
+                  <td className="wrap-cell small cell-note">{r.summary}</td>
+                  <td className="small" data-label="Pelaku">{r.type === 'system' ? <span className="sys-actor">⚙ {r.actor}</span> : r.actor}<div className="muted">{r.source === 'UI' ? 'Dashboard' : r.source === 'Scheduler' ? 'Otomatis' : r.source === 'System' ? 'Sistem' : r.source}{r.ip ? ` · ${r.ip}` : ''}</div></td>
+                  <td className="cell-status">{r.ok ? <span className="run-state ok"><CheckCircle2 size={13} /> Berhasil</span> : <span className="run-state bad"><XCircle size={13} /> Gagal</span>}</td>
                 </tr>
                 {open.has(r.id) && (
-                  <tr className="detail-row"><td></td><td colSpan={6}><Details d={r.details} /></td></tr>
+                  <tr className="detail-row"><td className="caret-cell"></td><td colSpan={6}><Details d={r.details} /></td></tr>
                 )}
               </Fragment>
             ))}

@@ -9,14 +9,14 @@ export const dynamic = 'force-dynamic';
 
 export const POST = handle(async (req) => {
   const { action, confirm } = await req.json().catch(() => ({}));
-  if (isScanning()) return json({ error: 'Scan sedang berjalan, tunggu sebentar' }, 409);
+  if (await isScanning()) return json({ error: 'Scan sedang berjalan, tunggu sebentar' }, 409);
   if (action === 'clear') {
     if (confirm !== 'HAPUS') return json({ error: 'Ketik HAPUS untuk konfirmasi' }, 400);
-    const before = dbStats();
-    resetAll();
+    const before = await dbStats();
+    await resetAll();
     audit({ category: 'data', action: 'data.clear', target: 'Database domain',
       summary: `Kosongkan data (${before.domains} domain, ${before.checks} riwayat cek dihapus)`, details: { before } });
-    return json({ ok: true, db: dbStats() });
+    return json({ ok: true, db: await dbStats() });
   }
   return json({ error: 'Aksi tidak dikenal' }, 400);
 }, { access: 'admin' });

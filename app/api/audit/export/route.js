@@ -2,13 +2,14 @@
 import * as XLSX from 'xlsx';
 import { allAudit, audit, auditFilter } from '@/lib/audit';
 import { handle } from '@/lib/api';
+import { fmtDateTime, isoDate } from '@/lib/time';
 
 export const dynamic = 'force-dynamic';
 
 export const GET = handle(async (req) => {
   const filter = auditFilter(req.nextUrl.searchParams);
   const rows = (await allAudit(filter)).map((r) => ({
-    Waktu: new Date(r.at).toLocaleString('id-ID'),
+    Waktu: fmtDateTime(r.at),
     Pengguna: r.actor,
     'Alamat IP': r.ip || '',
     Sumber: r.source,
@@ -28,7 +29,7 @@ export const GET = handle(async (req) => {
   return new Response(XLSX.write(wb, { type: 'buffer', bookType: 'xlsx' }), {
     headers: {
       'Content-Type': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-      'Content-Disposition': `attachment; filename="audit_log_${new Date().toLocaleDateString('en-CA')}.xlsx"`,
+      'Content-Disposition': `attachment; filename="audit_log_${isoDate()}.xlsx"`,
     },
   });
 }, { access: 'audit' });

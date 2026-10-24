@@ -114,9 +114,9 @@ export default function HealthView() {
                   const I = ICON[s.status];
                   return (
                     <tr key={s.name}>
-                      <td><b>{s.name}</b></td>
-                      <td><span className={`svc-state ${s.status}`}><I size={13} /> {LABEL[s.status]}</span></td>
-                      <td className="small wrap-cell">{s.detail}</td>
+                      <td className="cell-domain"><b>{s.name}</b></td>
+                      <td className="cell-status"><span className={`svc-state ${s.status}`}><I size={13} /> {LABEL[s.status]}</span></td>
+                      <td className="small wrap-cell cell-note">{s.detail}</td>
                     </tr>
                   );
                 })}

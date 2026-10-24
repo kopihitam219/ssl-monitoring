@@ -35,6 +35,13 @@ powershell -ExecutionPolicy Bypass -File "$HOME\Downloads\ssl-monitoring\pasang.
 
 `pasang.ps1` mengecek Node.js, menjalankan `npm install` dan `npm run build`, membuat shortcut **SSL Monitoring** di Desktop, lalu menjalankan aplikasi. Untuk menjalankan lain kali, klik shortcut itu (atau `jalankan.bat`).
 
+**Naik versi (zip baru):** ekstrak zip, lalu jalankan `perbarui.ps1`. Skrip itu mencari folder project yang sudah tersambung ke GitHub, menyalin file versi baru ke sana (`.env.local`, `data/`, dan `.git/` tidak disentuh), build, lalu `commit` + `push` — Vercel deploy ulang sendiri.
+
+```powershell
+Expand-Archive "$HOME\Downloads\ssl-monitoring.zip" "$HOME\Downloads" -Force
+powershell -ExecutionPolicy Bypass -File "$HOME\Downloads\ssl-monitoring\perbarui.ps1"
+```
+
 **Database.** Tanpa pengaturan apa pun, data disimpan di database lokal `data/pg` (Postgres tertanam, tanpa server). Supaya laptop memakai Supabase (dan sekaligus menjadi *scanner kantor*), buat file `.env.local` berisi `DATABASE_URL=…` — lihat **Deploy ke Vercel + Supabase**. Data versi 2.0 (`data/real.db`, `data/app.db`, `data/settings.json`) dipindahkan otomatis saat start pertama.
 
 > Dengan database lokal, hentikan aplikasi dulu sebelum menjalankan perintah terminal (`npm run scan`, `npm run reset-admin`, `npm run import-local`), karena database lokal hanya boleh dibuka satu proses.
@@ -561,6 +568,7 @@ lib/
   scheduler.js           scan otomatis, scanner kantor (ambil antrean), cek kondisi sistem; cronTick untuk Vercel Cron
 scripts/                 perintah terminal (scan, reset, reset-admin, import-local, sample:excel) + serve.js (supervisor npm start) + server.js (server production)
 pasang.ps1, jalankan.bat pemasangan & menjalankan di Windows
+perbarui.ps1             naik versi: salin file baru ke project, build, push ke GitHub
 vercel.json              Vercel Cron & region
 data/
   sample/                Excel contoh
