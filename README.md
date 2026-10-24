@@ -208,6 +208,26 @@ Selain service yang hidup atau mati, Health Check juga menangkap kondisi di mana
 - **Sertifikat aplikasi ini** — memantau sertifikat alamat aplikasi sendiri, supaya aplikasi pemantau SSL tidak justru mati karena sertifikatnya sendiri kedaluwarsa. Isi alamatnya di **Settings → Aturan status & scan → Alamat aplikasi ini**.
 - **Client secret Entra ID** — client secret Microsoft berumur 6–24 bulan dan habisnya senyap: login SSO tiba-tiba gagal total. Isi tanggalnya di **Settings → Integrasi → Entra ID** (lihat kolom *Expires* di Azure Portal); peringatan muncul 45 hari sebelum habis dan jadi *Bermasalah* pada 14 hari terakhir.
 - **API key SOAR** — mengingatkan rotasi setelah key berumur setahun.
+- **Penyimpanan database** — ukuran database dibandingkan batas paket (bawaannya 500 MB, sesuai Supabase gratis), lengkap dengan tabel terbesar. *Perhatian* di 70%, *Bermasalah* di 90%.
+
+## 7a. Backup & retensi data
+
+`ssl_checks` dan `audit_log` tumbuh setiap scan, sementara database Supabase paket gratis dibatasi 500 MB. **Settings → Data & penyimpanan** mengatur keduanya.
+
+**Backup.** Tombol **Unduh backup sekarang** menghasilkan satu berkas `ssl-monitoring-backup-YYYY-MM-DD.json` berisi seluruh tabel. Hash kata sandi sengaja tidak ikut disalin — setelah dipulihkan, atur ulang dengan `npm run reset-admin`. Unduh backup dulu sebelum memangkas.
+
+**Retensi.** Riwayat yang lebih tua dari batas berikut dihapus saat job **Pangkas riwayat lama** berjalan. Isi `0` untuk menyimpan selamanya.
+
+| Data | Bawaan | Catatan |
+|---|---|---|
+| Riwayat pemeriksaan sertifikat (`ssl_checks`) | 90 hari | Tumbuh paling cepat: satu baris per domain per scan |
+| Riwayat eksekusi job (`job_runs`) | 90 hari | |
+| Aktivitas (`activity_log`) | 90 hari | |
+| Audit log (`audit_log`) | 0 (selamanya) | Beri batas hanya setelah backup diunduh |
+
+**Grafik tren tidak terpengaruh.** Rekapitulasi harian disimpan terpisah di `daily_stats` dan tidak ikut dipangkas, jadi riwayat detail boleh dihapus tanpa kehilangan tren.
+
+Tombol **Lihat yang akan dihapus** menghitung dulu tanpa menghapus apa pun. Pemangkasan juga berjalan otomatis paling sering sekali sehari setelah scan terjadwal, selama *Pangkas otomatis* masih dicentang.
 
 ## 8. Audit Log
 

@@ -1,7 +1,8 @@
 'use client';
 import { useEffect, useState } from 'react';
-import { Save, Trash2, Database, CheckCircle2 } from 'lucide-react';
+import { Save, Trash2, Database, CheckCircle2, Download } from 'lucide-react';
 import { api, STATUS } from './ui';
+import { fmtBytes } from './HealthView';
 import { ConfirmDialog } from './Modal';
 import ProxySettings from './ProxySettings';
 import NotifySettings from './NotifySettings';
@@ -66,22 +67,9 @@ export default function SettingsView({ onChanged }) {
       <IntegrationGrid settings={s} onOpen={openIntegration} />
       <NotifySettings settings={s} put={put} saving={saving} setMsg={setMsg} />
 
-      {/* ---------- Data ---------- */}
-      <section className="panel">
-        <h2>Data</h2>
-        <div className="db-info">
-          <Database size={15} />
-          <span>Database: <code>{info.db.file.split(/[\\/]/).slice(-2).join('/')}</code> · {info.db.domains} domain dipantau · {info.db.excel} di Source of Truth · {info.db.checks} riwayat cek</span>
-        </div>
-        <div className="toolbar">
-          <button className="btn danger-ghost" onClick={() => setConfirm({
-            title: 'Kosongkan data?',
-            message: 'Semua domain, riwayat scan, dan aktivitas akan dihapus permanen. Pengaturan, user, dan audit log tidak ikut terhapus.',
-            confirmLabel: 'Kosongkan', danger: true, requireText: 'HAPUS',
-            run: async () => { await dataAction({ action: 'clear', confirm: 'HAPUS' }); setMsg({ ok: true, text: 'Data dikosongkan.' }); },
-          })}><Trash2 size={15} /> Kosongkan data</button>
-        </div>
-      </section>
+      {/* ---------- Data & penyimpanan ---------- */}
+      <DataStorage info={info} form={form} setForm={setForm} s={s} put={put} saving={saving}
+        setMsg={setMsg} setConfirm={setConfirm} dataAction={dataAction} />
 
       <DeletedDomains setMsg={setMsg} />
       <ProxySettings settings={s} put={put} saving={saving} setMsg={setMsg} />
@@ -147,5 +135,124 @@ export default function SettingsView({ onChanged }) {
           onConfirm={async () => { setMsg(null); await confirm.run(); }} onClose={() => setConfirm(null)} />
       )}
     </>
+  );
+}
+
+const RETENSI = [
+  ['ssl_checks', 'Riwayat pemeriksaan sertifikat', 'Tumbuh paling cepat: satu baris per domain per scan. Tren harian di dashboard tidak terpengaruh karena disimpan terpisah.'],
+  ['job_runs', 'Riwayat eksekusi job', 'Satu baris setiap job dijalankan.'],
+  ['activity_log', 'Aktivitas', 'Daftar kegiatan yang tampil di dashboard.'],
+  ['audit_log', 'Audit log', 'Bawaannya disimpan selamanya (0). Unduh backup dulu sebelum memberi batas.'],
+];
+
+/** Settings → Data & penyimpanan: ukuran database, backup, dan retensi riwayat. */
+function DataStorage({ info, form, setForm, s, put, saving, setMsg, setConfirm, dataAction }) {
+  const [storage, setStorage] = useState(null);
+  const [pratinjau, setPratinjau] = useState(null);
+  const [sibuk, setSibuk] = useState(false);
+
+  const muat = () => dataAction({ action: 'storage' }).then((r) => setStorage(r.storage)).catch(() => {});
+  useEffect(() => { muat(); }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
+  const r = form.retention || {};
+  const asal = s.retention || {};
+  const dirty = RETENSI.some(([k]) => String(r[k] ?? '') !== String(asal[k] ?? ''))
+    || !!form.pruneAfterScan !== !!s.pruneAfterScan;
+  const setR = (k) => (e) => setForm({ ...form, retention: { ...r, [k]: e.target.value } });
+
+  const persen = storage?.bytes && s.storageLimitMb
+    ? Math.round((storage.bytes / (s.storageLimitMb * 1024 * 1024)) * 100) : null;
+
+  async function lihatPratinjau() {
+    setSibuk(true); setMsg(null);
+    try {
+      const p = await dataAction({ action: 'prune-preview' });
+      setPratinjau(p);
+      if (!p.total) setMsg({ ok: true, text: 'Tidak ada riwayat yang melewati batas retensi.' });
+    } catch (e) { setMsg({ ok: false, text: e.message }); } finally { setSibuk(false); }
+  }
+
+  return (
+    <section className="panel">
+      <h2>Data &amp; penyimpanan</h2>
+      <div className="db-info">
+        <Database size={15} />
+        <span>
+          Database: <code>{info.db.file.split(/[\\/]/).slice(-2).join('/')}</code> · {info.db.domains} domain dipantau · {info.db.checks} riwayat cek
+          {storage?.bytes ? <> · terpakai <b>{fmtBytes(storage.bytes)}</b>{persen !== null && <> dari {s.storageLimitMb} MB ({persen}%)</>}</> : null}
+        </span>
+      </div>
+
+      {storage?.tabel?.length > 0 && (
+        <div className="table-wrap">
+          <table>
+            <thead><tr><th>Tabel</th><th>Ukuran</th><th>Perkiraan baris</th></tr></thead>
+            <tbody>
+              {storage.tabel.filter((t) => t.bytes > 0).slice(0, 5).map((t) => (
+                <tr key={t.nama}>
+                  <td data-label="Tabel"><code>{t.nama}</code></td>
+                  <td data-label="Ukuran">{fmtBytes(t.bytes)}</td>
+                  <td data-label="Baris">{t.baris.toLocaleString('id-ID')}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
+
+      <h3 className="sub-h">Backup</h3>
+      <p className="muted small">Unduh seluruh isi database sebagai satu berkas JSON. Lakukan ini sebelum memangkas riwayat, supaya tidak ada data yang hilang. Hash kata sandi tidak ikut disalin.</p>
+      <div className="toolbar">
+        <a className="btn primary" href="/api/backup"><Download size={15} /> Unduh backup sekarang</a>
+      </div>
+
+      <h3 className="sub-h">Retensi riwayat</h3>
+      <p className="muted small">Riwayat yang lebih tua dari batas ini dihapus saat job <b>Pangkas riwayat lama</b> berjalan. Isi <b>0</b> untuk menyimpan selamanya.</p>
+      <div className="form grid2">
+        {RETENSI.map(([k, label, ket]) => (
+          <label className="field" key={k}>
+            <span>{label} (hari)</span>
+            <input type="number" min="0" max="3650" value={r[k] ?? 0} onChange={setR(k)} />
+            <small className="muted">{ket}</small>
+          </label>
+        ))}
+      </div>
+      <label className="check"><input type="checkbox" checked={!!form.pruneAfterScan}
+        onChange={(e) => setForm({ ...form, pruneAfterScan: e.target.checked })} /> Pangkas otomatis sekali sehari setelah scan terjadwal</label>
+      <div className="toolbar">
+        <button className="btn primary" disabled={!dirty || saving}
+          onClick={() => put({ retention: Object.fromEntries(RETENSI.map(([k]) => [k, Number(r[k]) || 0])), pruneAfterScan: !!form.pruneAfterScan }, 'Pengaturan retensi disimpan.')}>
+          <Save size={15} /> Simpan retensi
+        </button>
+        <button className="btn ghost" disabled={sibuk} onClick={lihatPratinjau}>Lihat yang akan dihapus</button>
+        {pratinjau?.total > 0 && (
+          <button className="btn danger-ghost" onClick={() => setConfirm({
+            title: 'Pangkas riwayat lama?',
+            message: `${pratinjau.total.toLocaleString('id-ID')} baris yang melewati batas retensi akan dihapus permanen. Pastikan kamu sudah mengunduh backup.`,
+            confirmLabel: 'Pangkas sekarang', danger: true,
+            run: async () => {
+              const out = await dataAction({ action: 'prune' });
+              setPratinjau(null); setStorage(out.storage || null);
+              setMsg({ ok: true, text: `${out.total.toLocaleString('id-ID')} baris dihapus.` });
+            },
+          })}><Trash2 size={15} /> Pangkas {pratinjau.total.toLocaleString('id-ID')} baris</button>
+        )}
+      </div>
+      {pratinjau?.total > 0 && (
+        <ul className="small muted">
+          {pratinjau.hasil.map((x) => <li key={x.tabel}>{x.label}: {x.baris.toLocaleString('id-ID')} baris lebih tua dari {x.hari} hari</li>)}
+        </ul>
+      )}
+
+      <h3 className="sub-h">Kosongkan data</h3>
+      <div className="toolbar">
+        <button className="btn danger-ghost" onClick={() => setConfirm({
+          title: 'Kosongkan data?',
+          message: 'Semua domain, riwayat scan, dan aktivitas akan dihapus permanen. Pengaturan, user, dan audit log tidak ikut terhapus.',
+          confirmLabel: 'Kosongkan', danger: true, requireText: 'HAPUS',
+          run: async () => { await dataAction({ action: 'clear', confirm: 'HAPUS' }); setMsg({ ok: true, text: 'Data dikosongkan.' }); },
+        })}><Trash2 size={15} /> Kosongkan data</button>
+      </div>
+    </section>
   );
 }
