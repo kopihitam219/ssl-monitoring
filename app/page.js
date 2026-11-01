@@ -39,6 +39,12 @@ const TITLES = {
   settings: ['Settings', 'Konfigurasi aplikasi'],
 };
 
+// warna neon & gambar kucing per fitur (gambar di public/art/fitur/<view>.jpg)
+const FITUR_WARNA = {
+  dashboard: '#3d8bff', inventory: '#22c55e', excel: '#3b82f6', jobs: '#a855f7',
+  audit: '#f59e0b', health: '#f43f5e', users: '#6366f1', settings: '#22d3ee',
+};
+
 /** Pintu masuk: cek status login → tampilkan Setup / Login / Aplikasi. */
 export default function Root() {
   const [auth, setAuth] = useState({ loading: true });
@@ -197,7 +203,7 @@ function App({ user, onSessionChange, onLoggedOut }) {
         <header className="topbar">
           <button className="icon-btn menu" onClick={() => setNavOpen(true)} aria-label="Menu"><Menu size={20} /></button>
           <div className="page-title">
-            {view !== 'dashboard' && <><h1>{title}</h1><p className="muted">{subtitle}</p></>}
+
           </div>
           <div className="top-actions">
             <PeriodPicker value={period} onChange={changePeriod} />
@@ -210,14 +216,23 @@ function App({ user, onSessionChange, onLoggedOut }) {
           </div>
         </header>
 
-        {view === 'dashboard' && (
-          <section className="hero" aria-label="SSL Monitoring">
+        {view === 'dashboard' ? (
+          <section className="hero" style={{ '--fc': FITUR_WARNA.dashboard }} aria-label="SSL Monitoring">
             <div className="hero-text">
               <span className="hero-kicker">Enterprise Security Portal</span>
               <h1>SSL <em>Monitoring</em></h1>
               <p>Safe Today, Secure Tomorrow</p>
             </div>
-            <img className="hero-art" src="/art/banner-kucing.jpg" alt="" aria-hidden="true" />
+            <img className="hero-art" src="/art/fitur/dashboard.jpg" alt="" aria-hidden="true" />
+          </section>
+        ) : (
+          <section className="hero fitur" style={{ '--fc': FITUR_WARNA[view] || '#3d8bff' }} aria-label={title}>
+            <div className="hero-text">
+              <span className="hero-kicker">SSL Monitoring</span>
+              <h1>{title}</h1>
+              <p>{subtitle}</p>
+            </div>
+            {FITUR_WARNA[view] && <img className="hero-art" src={`/art/fitur/${view}.jpg`} alt="" aria-hidden="true" />}
           </section>
         )}
         {error && <div className="alert error">Tidak bisa memuat data: {error}</div>}

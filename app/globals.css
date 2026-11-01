@@ -1079,3 +1079,48 @@ nav button.active { background: linear-gradient(135deg, #2f7bff, #1d4fd8); borde
   .auth-brand .brand-name { font-size: 34px; }
   .auth-brand .brand-name, .auth-brand .brand-tag { text-shadow: 0 2px 12px rgba(0, 0, 0, .9), 0 0 4px rgba(0, 0, 0, .8); }
 }
+
+/* =====================================================================
+   KUCING PER FITUR + DESAIN CARD NEON
+   --fc = warna fitur (diatur dari page.js), gambar di public/art/fitur/
+   ===================================================================== */
+.hero { --fc: #3d8bff; min-height: 200px; border-color: color-mix(in srgb, var(--fc) 70%, transparent);
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--fc) 35%, transparent), 0 0 26px color-mix(in srgb, var(--fc) 40%, transparent), inset 0 0 30px color-mix(in srgb, var(--fc) 12%, transparent);
+  background: linear-gradient(90deg, #050b24 0%, color-mix(in srgb, var(--fc) 22%, #07123a) 55%, color-mix(in srgb, var(--fc) 35%, #07123a) 100%); }
+.hero-art { width: min(48%, 460px); object-position: center 30%;
+  -webkit-mask-image: linear-gradient(90deg, transparent 0, #000 35%); mask-image: linear-gradient(90deg, transparent 0, #000 35%); }
+.hero-text { max-width: 58%; }
+.hero.fitur h1 { font-size: 34px; text-shadow: 0 0 18px color-mix(in srgb, var(--fc) 80%, transparent); }
+.hero.fitur .hero-kicker { color: color-mix(in srgb, var(--fc) 55%, #fff); font-weight: 700; text-transform: uppercase; letter-spacing: 1.5px; font-size: 12px; }
+.hero::after { content: ""; position: absolute; left: 24px; right: 24px; bottom: 0; height: 2px;
+  background: linear-gradient(90deg, transparent, var(--fc), transparent); box-shadow: 0 0 12px var(--fc); }
+
+/* card / panel: sudut neon + garis cahaya di atas */
+.panel { position: relative; overflow: visible; }
+.panel::before, .panel::after { content: ""; position: absolute; width: 22px; height: 22px; pointer-events: none;
+  border: 2.5px solid #6fb2ff; filter: drop-shadow(0 0 5px #3d8bff); }
+.panel::before { top: -2px; left: -2px; border-right: 0; border-bottom: 0; border-top-left-radius: 16px; }
+.panel::after { bottom: -2px; right: -2px; border-left: 0; border-top: 0; border-bottom-right-radius: 16px; }
+.panel > h2:first-child, .panel-head h2 { display: flex; align-items: center; gap: 10px; }
+.panel > h2:first-child::before, .panel-head h2::before { content: ""; width: 4px; height: 16px; border-radius: 4px;
+  background: linear-gradient(180deg, #22d3ee, #3d8bff); box-shadow: 0 0 10px #3d8bff; }
+.panel:hover { box-shadow: 0 0 0 1px rgba(80, 150, 255, .5), 0 0 26px rgba(47, 123, 255, .45), inset 0 0 22px rgba(47, 123, 255, .1); }
+
+/* kartu KPI: kilau bergerak + sudut */
+.kpi { position: relative; overflow: hidden; }
+.kpi::before { content: ""; position: absolute; top: 0; left: -60%; width: 40%; height: 100%; pointer-events: none;
+  background: linear-gradient(100deg, transparent, rgba(255, 255, 255, .16), transparent); transform: skewX(-20deg); transition: left .6s; }
+.kpi:hover::before { left: 120%; }
+.kpi::after { content: ""; position: absolute; top: 6px; right: 6px; width: 14px; height: 14px; pointer-events: none;
+  border-top: 2px solid var(--c); border-right: 2px solid var(--c); border-top-right-radius: 6px; opacity: .9; }
+
+@media (prefers-reduced-motion: reduce) { .kpi::before { display: none; } .kpi { transition: none; } }
+
+@media (max-width: 860px) {
+  .hero { min-height: 160px; }
+  .hero-text { max-width: 60%; }
+  .hero h1 { font-size: 25px; }
+  .hero.fitur h1 { font-size: 24px; }
+  .hero.fitur p { display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
+  .hero-art { width: 52%; object-position: 30% 30%; -webkit-mask-image: linear-gradient(90deg, transparent 0, #000 28%); mask-image: linear-gradient(90deg, transparent 0, #000 28%); }
+}
