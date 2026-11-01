@@ -11,6 +11,7 @@ function MicrosoftLogo() {
   );
 }
 import { api } from './ui';
+import KucingHidup from './KucingHidup';
 import { Modal } from './Modal';
 
 function PasswordInput({ value, onChange, autoComplete, placeholder, autoFocus }) {
@@ -28,7 +29,7 @@ function PasswordInput({ value, onChange, autoComplete, placeholder, autoFocus }
 function AuthShell({ title, subtitle, children }) {
   return (
     <div className="auth-page">
-      <div className="auth-art" aria-hidden="true"><img src="/art/login-kucing.jpg" alt="" /></div>
+      <div className="auth-art" aria-hidden="true"><KucingHidup id="login" className="login-kucing" /></div>
       <div className="auth-card">
         <div className="auth-brand">
           <ShieldHalf size={40} className="brand-icon" />
