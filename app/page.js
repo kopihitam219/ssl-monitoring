@@ -229,7 +229,7 @@ function App({ user, onSessionChange, onLoggedOut }) {
               <h1>{BANNER[view].a}<em>{BANNER[view].b}</em></h1>
               <p>{BANNER[view].tag}</p>
             </div>
-            <img className="banner-art" src={`/art/banner/${view}.jpg`} alt="" aria-hidden="true" />
+            <img className="banner-art" src={`/art/fitur/${view}.jpg`} alt="" aria-hidden="true" />
           </section>
         )}
         {error && <div className="alert error">Tidak bisa memuat data: {error}</div>}
