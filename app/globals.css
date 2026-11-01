@@ -1134,3 +1134,42 @@ nav button.active { background: linear-gradient(135deg, #2f7bff, #1d4fd8); borde
   .hero-text { max-width: 56%; }
   .hero-art { max-width: 52%; object-position: center; }
 }
+
+/* =====================================================================
+   BANNER FITUR (mengikuti contoh): teks kiri, kucing hitam kanan,
+   tepi neon sesuai warna fitur, sudut terpotong
+   ===================================================================== */
+.banner { --fc: #3d8bff; position: relative; display: flex; align-items: center; min-height: 156px; margin-bottom: 18px; overflow: hidden; isolation: isolate;
+  clip-path: polygon(22px 0, calc(100% - 22px) 0, 100% 22px, 100% calc(100% - 22px), calc(100% - 22px) 100%, 22px 100%, 0 calc(100% - 22px), 0 22px);
+  background: linear-gradient(90deg, #060c2a 0%, #081236 40%, color-mix(in srgb, var(--fc) 30%, #081236) 100%); }
+/* garis neon di tepi (ikut sudut terpotong) */
+.banner::before { content: ""; position: absolute; inset: 0; z-index: 3; pointer-events: none; padding: 2px;
+  clip-path: inherit; background: linear-gradient(90deg, var(--fc), color-mix(in srgb, var(--fc) 60%, #fff), var(--fc));
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0); -webkit-mask-composite: xor;
+  mask: linear-gradient(#000 0 0) content-box exclude, linear-gradient(#000 0 0); filter: drop-shadow(0 0 6px var(--fc)); }
+/* cahaya + garis sirkuit tipis */
+.banner::after { content: ""; position: absolute; inset: 0; z-index: 0; pointer-events: none;
+  background: radial-gradient(60% 120% at 62% 50%, color-mix(in srgb, var(--fc) 35%, transparent), transparent 70%),
+    repeating-linear-gradient(90deg, transparent 0 46px, color-mix(in srgb, var(--fc) 10%, transparent) 46px 47px); }
+.banner-text { position: relative; z-index: 2; padding: 22px 30px; max-width: 52%; }
+.banner-kicker { display: block; font-size: 13.5px; color: #dbe7ff; letter-spacing: .2px; }
+.banner h1 { margin: 6px 0 8px; font-size: 40px; font-weight: 800; line-height: 1.05; color: #fff; letter-spacing: .3px; }
+.banner h1 em { font-style: normal; color: color-mix(in srgb, var(--fc) 70%, #fff); text-shadow: 0 0 14px var(--fc), 0 0 2px var(--fc); }
+.banner p { margin: 0; font-size: 16px; color: #e6eeff; }
+.banner-art { position: absolute; z-index: 1; right: 0; top: 0; height: 100%; width: auto; max-width: 62%; aspect-ratio: 554 / 155; object-fit: cover; object-position: right center;
+  -webkit-mask-image: linear-gradient(90deg, transparent 0, #000 18%); mask-image: linear-gradient(90deg, transparent 0, #000 18%); }
+
+@media (max-width: 860px) {
+  .banner { min-height: 128px; clip-path: polygon(14px 0, calc(100% - 14px) 0, 100% 14px, 100% calc(100% - 14px), calc(100% - 14px) 100%, 14px 100%, 0 calc(100% - 14px), 0 14px); }
+  .banner-text { padding: 16px 16px; max-width: 60%; }
+  .banner-kicker { font-size: 10.5px; }
+  .banner h1 { font-size: 24px; margin: 4px 0 5px; }
+  .banner p { font-size: 11.5px; }
+  .banner-art { max-width: 75%; -webkit-mask-image: linear-gradient(90deg, transparent 0, rgba(0,0,0,.6) 30%, #000 55%); mask-image: linear-gradient(90deg, transparent 0, rgba(0,0,0,.6) 30%, #000 55%); }
+  .banner h1, .banner p, .banner-kicker { text-shadow: 0 2px 8px #000, 0 0 2px #000; }
+}
+/* tepi neon membulat (garis utuh di semua sisi) */
+.banner { clip-path: none; border-radius: 18px; border: 2px solid var(--fc);
+  box-shadow: 0 0 18px color-mix(in srgb, var(--fc) 60%, transparent), inset 0 0 22px color-mix(in srgb, var(--fc) 20%, transparent); }
+.banner::before { display: none; }
+@media (max-width: 860px) { .banner { clip-path: none; border-radius: 14px; } }

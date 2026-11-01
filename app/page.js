@@ -39,10 +39,16 @@ const TITLES = {
   settings: ['Settings', 'Konfigurasi aplikasi'],
 };
 
-// warna neon & gambar kucing per fitur (gambar di public/art/fitur/<view>.jpg)
-const FITUR_WARNA = {
-  dashboard: '#3d8bff', inventory: '#22c55e', excel: '#3b82f6', jobs: '#a855f7',
-  audit: '#f59e0b', health: '#f43f5e', users: '#6366f1', settings: '#22d3ee',
+// banner tiap fitur: judul 2 warna (a putih + b berwarna), tagline, warna neon; gambar di public/art/banner/<view>.jpg
+const BANNER = {
+  dashboard: { a: 'Dash', b: 'board', tag: 'Monitor. Analyze. Stay Secure.', warna: '#3d8bff' },
+  inventory: { a: 'SSL ', b: 'Inventory', tag: 'Discover. Manage. Secure.', warna: '#22c55e' },
+  excel: { a: 'Source of ', b: 'Truth', tag: 'Single Source. Trusted Data.', warna: '#38bdf8' },
+  jobs: { a: '', b: 'Jobs', tag: 'Automate. Execute. Monitor.', warna: '#a855f7' },
+  audit: { a: 'Audit ', b: 'Log', tag: 'Track. Audit. Ensure Compliance.', warna: '#f59e0b' },
+  health: { a: 'Health ', b: 'Check', tag: 'Check. Validate. Stay Healthy.', warna: '#f43f5e' },
+  users: { a: '', b: 'Users', tag: 'Manage. Control. Secure.', warna: '#818cf8' },
+  settings: { a: '', b: 'Settings', tag: 'Configure. Optimize. Empower.', warna: '#22d3ee' },
 };
 
 /** Pintu masuk: cek status login → tampilkan Setup / Login / Aplikasi. */
@@ -216,23 +222,14 @@ function App({ user, onSessionChange, onLoggedOut }) {
           </div>
         </header>
 
-        {view === 'dashboard' ? (
-          <section className="hero" style={{ '--fc': FITUR_WARNA.dashboard }} aria-label="SSL Monitoring">
-            <div className="hero-text">
-              <span className="hero-kicker">Enterprise Security Portal</span>
-              <h1>SSL <em>Monitoring</em></h1>
-              <p>Safe Today, Secure Tomorrow</p>
+        {BANNER[view] && (
+          <section className="banner" style={{ '--fc': BANNER[view].warna }} aria-label={title}>
+            <div className="banner-text">
+              <span className="banner-kicker">Enterprise Security Portal</span>
+              <h1>{BANNER[view].a}<em>{BANNER[view].b}</em></h1>
+              <p>{BANNER[view].tag}</p>
             </div>
-            <img className="hero-art" src="/art/fitur/dashboard.jpg" alt="" aria-hidden="true" />
-          </section>
-        ) : (
-          <section className="hero fitur" style={{ '--fc': FITUR_WARNA[view] || '#3d8bff' }} aria-label={title}>
-            <div className="hero-text">
-              <span className="hero-kicker">SSL Monitoring</span>
-              <h1>{title}</h1>
-              <p>{subtitle}</p>
-            </div>
-            {FITUR_WARNA[view] && <img className="hero-art" src={`/art/fitur/${view}.jpg`} alt="" aria-hidden="true" />}
+            <img className="banner-art" src={`/art/banner/${view}.jpg`} alt="" aria-hidden="true" />
           </section>
         )}
         {error && <div className="alert error">Tidak bisa memuat data: {error}</div>}
