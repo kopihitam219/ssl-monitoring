@@ -1347,3 +1347,16 @@ main { padding-top: 0; }
   .adegan h1 { font-size: 24px; }
 }
 @media (max-width: 860px) { .adegan-art { -webkit-mask-image: linear-gradient(90deg, transparent 0, #000 16%) !important; mask-image: linear-gradient(90deg, transparent 0, #000 16%) !important; } }
+/* ===== header lebih kecil: gambar kucing DIPERKECIL (bukan dipotong) ===== */
+@media (min-width: 861px) {
+  .adegan { min-height: 250px !important; margin-bottom: -28px !important; padding-top: 70px !important; padding-bottom: 40px !important; }
+  .adegan-art { top: 60px !important; bottom: auto !important; height: 160px !important; right: 16px !important; }
+  .adegan-kicker { font-size: 15px; }
+  .adegan h1 { font-size: 40px; }
+  .adegan p { font-size: 15px; }
+}
+@media (max-width: 860px) {
+  .adegan { min-height: 200px !important; margin-bottom: -24px !important; }
+  .adegan-art { top: 46px !important; height: 128px !important; width: auto !important; max-width: 52% !important; object-fit: contain !important; object-position: right bottom !important;
+    -webkit-mask-image: none !important; mask-image: none !important; }
+}
