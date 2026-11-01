@@ -223,12 +223,13 @@ function App({ user, onSessionChange, onLoggedOut }) {
         </header>
 
         {BANNER[view] && (
-          <section className="banner" style={{ '--fc': BANNER[view].warna }} aria-label={title}>
+          <section className="banner" style={{ '--fc': BANNER[view].warna, '--latar': `url(/art/latar/${view}.jpg)` }} aria-label={title}>
             <div className="banner-text">
               <span className="banner-kicker">Enterprise Security Portal</span>
               <h1>{BANNER[view].a}<em>{BANNER[view].b}</em></h1>
               <p>{BANNER[view].tag}</p>
             </div>
+            <img className="banner-dekor" src={`/art/dekor/${view}.jpg`} alt="" aria-hidden="true" />
             <img className="banner-art" src={`/art/fitur/${view}.jpg`} alt="" aria-hidden="true" />
           </section>
         )}

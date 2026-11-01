@@ -1182,3 +1182,22 @@ nav button.active { background: linear-gradient(135deg, #2f7bff, #1d4fd8); borde
   .banner-text { max-width: 58%; }
   .banner-art { max-width: 60%; -webkit-mask-image: linear-gradient(90deg, transparent 0, #000 30%); mask-image: linear-gradient(90deg, transparent 0, #000 30%); }
 }
+/* isi penuh: latar warna fitur (blur) + ikon dekorasi di tengah + kucing di kanan */
+.banner { background: linear-gradient(90deg, #060c2a 0%, rgba(6,12,42,.92) 30%, rgba(6,12,42,.35) 65%, transparent 100%), var(--latar) center / cover no-repeat, #081236; }
+.banner-dekor { position: absolute; z-index: 1; top: 0; height: 100%; width: auto; right: calc(min(46%, 270px) - 30px); max-width: 40%; object-fit: cover; object-position: center; opacity: .95;
+  -webkit-mask-image: linear-gradient(90deg, transparent 0, #000 30%, #000 70%, transparent 100%); mask-image: linear-gradient(90deg, transparent 0, #000 30%, #000 70%, transparent 100%); }
+.banner-art { -webkit-mask-image: linear-gradient(90deg, transparent 0, #000 16%); mask-image: linear-gradient(90deg, transparent 0, #000 16%); }
+@media (max-width: 860px) {
+  .banner-dekor { display: none; }
+  .banner { background: linear-gradient(90deg, #060c2a 0%, rgba(6,12,42,.85) 40%, rgba(6,12,42,.2) 100%), var(--latar) center / cover no-repeat, #081236; }
+}
+/* isi bagian tengah: sirkuit neon + cahaya warna fitur + latar lebih terang */
+.banner { background: linear-gradient(90deg, #060c2a 0%, rgba(6,12,42,.88) 24%, rgba(6,12,42,.45) 45%, rgba(6,12,42,.1) 100%), var(--latar) center / cover no-repeat, #081236; }
+.banner::after { z-index: 0; opacity: 1;
+  background:
+    radial-gradient(45% 140% at 58% 50%, color-mix(in srgb, var(--fc) 45%, transparent), transparent 70%),
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='220' height='110' viewBox='0 0 220 110'%3E%3Cg fill='none' stroke='%23ffffff' stroke-opacity='.22' stroke-width='1.4'%3E%3Cpath d='M0 20h40l14 14h46l10-10h40M60 110V80l18-18h50l12 12h80M0 70h24l12-12h20M150 0v18l14 14h56M110 110V94l10-10h30M180 110V84'/%3E%3C/g%3E%3Cg fill='%23ffffff' fill-opacity='.45'%3E%3Ccircle cx='150' cy='24' r='2.4'/%3E%3Ccircle cx='56' cy='58' r='2.4'/%3E%3Ccircle cx='220' cy='32' r='2.4'/%3E%3Ccircle cx='150' cy='84' r='2.4'/%3E%3Ccircle cx='180' cy='84' r='2.4'/%3E%3C/g%3E%3C/svg%3E") 0 0 / 220px 110px repeat;
+  -webkit-mask-image: linear-gradient(90deg, transparent 0, #000 32%, #000 100%); mask-image: linear-gradient(90deg, transparent 0, #000 32%, #000 100%); }
+.banner-dekor { right: calc(min(46%, 270px) - 40px); max-width: 46%; height: 112%; top: -6%; }
+@media (min-width: 861px) { .banner { min-height: 250px; } .banner h1 { font-size: 46px; } .banner-art { max-width: 40%; } .banner-dekor { right: calc(min(40%, 310px) - 40px); } }
+@media (max-width: 860px) { .banner-text { max-width: 54%; padding-right: 0; } .banner-art { max-width: 50%; } .banner h1 { font-size: 22px; } }
