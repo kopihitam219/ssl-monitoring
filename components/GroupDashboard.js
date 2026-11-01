@@ -1,7 +1,7 @@
 'use client';
 // Dashboard satu group (tab di menu Dashboard, nama tab = nama group, mis. Local / Public / Partner).
 import { useEffect, useState } from 'react';
-import { FolderKanban, Download, ScanLine, RotateCw, Activity, Loader2, CheckCircle2, XCircle } from 'lucide-react';
+import { FolderKanban, Download, ScanLine, RotateCw, Activity, Loader2, CheckCircle2, XCircle, Globe } from 'lucide-react';
 import InventoryTable from './InventoryTable';
 import { StatusDonut } from './MonitoringDashboard';
 import { api, fmtDateTime, fmtDate, STATUS, CARD_KEYS, statusSub, pct } from './ui';
@@ -80,11 +80,11 @@ export default function GroupDashboard({ groupId, color, reloadKey, onChanged })
 
       <div className="gd-kpis">
         <button className={`gd-kpi ${!status ? 'on' : ''}`} style={{ '--c': color }} onClick={() => setStatus('')}>
-          <span className="gd-kpi-label"><i />Total domain</span><b>{data.total}</b><small>di group ini</small>
+          <span className="gd-kpi-label"><i />Total domain</span><b>{data.total}</b><small>di group ini</small><span className="gd-kpi-icon"><Globe size={30} /></span>
         </button>
         {CARD_KEYS.map((k) => (
           <button key={k} className={`gd-kpi ${status === k ? 'on' : ''}`} style={{ '--c': STATUS[k].color }} onClick={() => setStatus(status === k ? '' : k)}>
-            <span className="gd-kpi-label"><i />{STATUS[k].label}</span><b>{c[k] || 0}</b><small>{statusSub(k, data.tiers)}</small>
+            <span className="gd-kpi-label"><i />{STATUS[k].label}</span><b>{c[k] || 0}</b><small>{statusSub(k, data.tiers)}</small><span className="gd-kpi-icon">{(() => { const Ic = STATUS[k].icon; return <Ic size={30} />; })()}</span>
           </button>
         ))}
       </div>

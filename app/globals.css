@@ -1201,3 +1201,107 @@ nav button.active { background: linear-gradient(135deg, #2f7bff, #1d4fd8); borde
 .banner-dekor { right: calc(min(46%, 270px) - 40px); max-width: 46%; height: 112%; top: -6%; }
 @media (min-width: 861px) { .banner { min-height: 250px; } .banner h1 { font-size: 46px; } .banner-art { max-width: 40%; } .banner-dekor { right: calc(min(40%, 310px) - 40px); } }
 @media (max-width: 860px) { .banner-text { max-width: 54%; padding-right: 0; } .banner-art { max-width: 50%; } .banner h1 { font-size: 22px; } }
+
+/* =====================================================================
+   DESAIN PENUH SESUAI MOCKUP
+   adegan kucing besar di atas → panel besar bercahaya menumpuk di bawahnya
+   ===================================================================== */
+.banner { display: none; }
+.app { background: radial-gradient(1000px 500px at 75% 0%, rgba(47,123,255,.45), transparent 65%), radial-gradient(700px 500px at 0% 100%, rgba(47,123,255,.25), transparent 60%); }
+main { padding-top: 0; }
+.topbar { position: relative; z-index: 5; margin-bottom: 0; padding-top: 14px; }
+
+/* sidebar kaca melayang */
+@media (min-width: 861px) {
+  .app { grid-template-columns: 250px 1fr; }
+  .sidebar { margin: 10px 0 10px 10px; height: calc(100vh - 20px); top: 10px; border-radius: 18px; border: 1.5px solid rgba(110,175,255,.8);
+    background: linear-gradient(180deg, rgba(14,34,100,.8), rgba(6,14,48,.9)); box-shadow: 0 0 24px rgba(47,123,255,.5), inset 0 0 24px rgba(47,123,255,.15); }
+}
+
+/* adegan atas: tanpa kotak, gambar kucing+kota penuh di kanan */
+.adegan { --fc: #3d8bff; position: relative; z-index: 1; min-height: 250px; margin: -64px -24px -46px; padding: 76px 24px 60px; display: flex; align-items: center; overflow: hidden; }
+.adegan-art { position: absolute; right: 0; top: 0; height: 100%; width: 72%; object-fit: cover; object-position: right center;
+  -webkit-mask-image: linear-gradient(90deg, transparent 0, #000 28%), linear-gradient(0deg, transparent 0, #000 22%); -webkit-mask-composite: source-in;
+  mask-image: linear-gradient(90deg, transparent 0, #000 28%), linear-gradient(0deg, transparent 0, #000 22%); mask-composite: intersect; }
+.adegan-text { position: relative; z-index: 1; padding-left: 8px; }
+.adegan-kicker { font-size: 19px; color: #e6eeff; }
+.adegan h1 { margin: 2px 0 6px; font-size: 52px; font-weight: 800; line-height: 1.05; color: #fff; text-shadow: 0 2px 12px rgba(0,0,0,.6); }
+.adegan h1 em { font-style: normal; color: color-mix(in srgb, var(--fc) 75%, #fff); text-shadow: 0 0 18px var(--fc); }
+.adegan p { margin: 0; font-size: 18px; color: #e6eeff; }
+
+/* panel besar bercahaya yang menumpuk di atas adegan */
+.konten { position: relative; z-index: 2; padding: 16px; border-radius: 20px; border: 2px solid rgba(110,175,255,.85);
+  background: linear-gradient(175deg, rgba(20,52,150,.72), rgba(8,18,64,.9) 30%, rgba(6,14,50,.94));
+  box-shadow: 0 0 34px rgba(47,123,255,.6), inset 0 0 40px rgba(47,123,255,.16), inset 0 1px 0 rgba(255,255,255,.25);
+  backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); }
+.konten > .dash-switch { display: flex; flex-wrap: wrap; border: 0; background: none; box-shadow: none; padding: 0; margin-bottom: 14px; gap: 8px; }
+.konten > .dash-switch button { border: 1.5px solid rgba(110,175,255,.6); background: rgba(12,30,92,.8); color: #e6efff; border-radius: 10px; padding: 8px 16px; }
+.konten > .dash-switch button.on { background: linear-gradient(135deg, #4f9bff, #1d4fd8); border-color: #a9d0ff; color: #fff; box-shadow: 0 0 16px rgba(61,139,255,.9); }
+.konten > .dash-switch button.flow.on { background: linear-gradient(135deg, #fde047, #f59e0b); color: #1a1205; border-color: #fef08a; box-shadow: 0 0 18px rgba(245,158,11,.95); }
+
+/* panel kaca biru di dalam */
+.konten .panel, .gd-head { border-radius: 16px; border: 1.5px solid rgba(110,175,255,.8);
+  background: linear-gradient(160deg, rgba(26,62,165,.55), rgba(9,22,78,.85) 60%);
+  box-shadow: 0 0 20px rgba(47,123,255,.5), inset 0 0 26px rgba(47,123,255,.16), inset 0 1px 0 rgba(255,255,255,.18); }
+.konten .panel::before, .konten .panel::after { display: none; }
+.konten .panel > h2:first-child::before, .konten .panel-head h2::before { display: none; }
+.gd-head { border-color: var(--gc); background: linear-gradient(110deg, color-mix(in srgb, var(--gc) 24%, #0d1d5e), rgba(9,22,78,.85) 55%);
+  box-shadow: 0 0 20px color-mix(in srgb, var(--gc) 55%, transparent), inset 0 0 26px color-mix(in srgb, var(--gc) 16%, transparent); }
+.gd-icon { width: 56px; height: 56px; border-radius: 14px; border: 2px solid var(--gc); color: #fde68a; background: linear-gradient(135deg, color-mix(in srgb, var(--gc) 55%, #0a1440), color-mix(in srgb, var(--gc) 20%, #0a1440)); box-shadow: 0 0 18px var(--gc); }
+.gd-chips span { background: rgba(8,20,64,.85); border: 1px solid rgba(110,175,255,.5); color: #cfe0ff; }
+.gd-actions .btn, .gd-head .btn { border-radius: 12px; border: 1.5px solid rgba(110,175,255,.85); background: rgba(14,34,100,.8); box-shadow: 0 0 12px rgba(47,123,255,.45); color: #fff; }
+.gd-actions .btn.primary { background: linear-gradient(135deg, #4f9bff, #1d4fd8); border-color: #a9d0ff; box-shadow: 0 0 18px rgba(61,139,255,.9); }
+.gd-badge.warn { background: #ef4444; color: #fff; }
+
+/* kartu status berwarna penuh + ikon menyala di kanan (Group & Dashboard Utama) */
+.gd-kpi, .kpi { position: relative; overflow: hidden; color: #fff; border-radius: 14px; border: 2px solid var(--c);
+  background: linear-gradient(140deg, color-mix(in srgb, var(--c) 62%, #0a1440) 0%, color-mix(in srgb, var(--c) 32%, #0a1440) 55%, color-mix(in srgb, var(--c) 16%, #070d2a) 100%);
+  box-shadow: 0 0 20px color-mix(in srgb, var(--c) 70%, transparent), inset 0 0 24px color-mix(in srgb, var(--c) 38%, transparent), inset 0 1px 0 rgba(255,255,255,.35); }
+.gd-kpi:hover, .kpi:hover { transform: translateY(-3px); box-shadow: 0 0 32px var(--c), inset 0 0 28px color-mix(in srgb, var(--c) 48%, transparent), inset 0 1px 0 rgba(255,255,255,.4); }
+.gd-kpi { display: grid; grid-template-columns: 1fr auto; column-gap: 6px; row-gap: 1px; padding: 12px; }
+.gd-kpi.on { outline: 2px solid #fff; outline-offset: -5px; box-shadow: 0 0 30px var(--c), inset 0 0 26px color-mix(in srgb, var(--c) 45%, transparent); }
+.gd-kpi-label { grid-column: 1; color: #fff; font-size: 12.5px; font-weight: 700; }
+.gd-kpi-label i { width: 10px; height: 10px; border-radius: 50%; background: color-mix(in srgb, var(--c) 55%, #fff); box-shadow: 0 0 8px var(--c); }
+.gd-kpi b { grid-column: 1; font-size: 30px; font-weight: 800; color: #fff; }
+.gd-kpi small { grid-column: 1; color: rgba(255,255,255,.85); }
+.gd-kpi-icon { grid-column: 2; grid-row: 1 / 4; align-self: center; color: color-mix(in srgb, var(--c) 40%, #fff); filter: drop-shadow(0 0 6px var(--c)) drop-shadow(0 0 12px var(--c)); }
+.kpi::before, .kpi::after { display: none; }
+.kpi-icon { order: 2; background: transparent; border: 0; box-shadow: none; color: color-mix(in srgb, var(--c) 40%, #fff); filter: drop-shadow(0 0 6px var(--c)) drop-shadow(0 0 12px var(--c)); }
+.kpi-icon svg { width: 30px; height: 30px; }
+.kpi-label { color: #fff; font-weight: 700; }
+.kpi-value { color: #fff; text-shadow: none; }
+.kpi-sub { color: rgba(255,255,255,.82); }
+.kpi-arrow { display: none; }
+
+/* bar environment & donut menyala */
+.gd-env li:nth-child(3n+1) { --bc: #3d8bff; } .gd-env li:nth-child(3n+2) { --bc: #22c55e; } .gd-env li:nth-child(3n) { --bc: #a855f7; }
+.gd-env li > span:first-child::before { content: ""; display: inline-block; width: 10px; height: 10px; border-radius: 50%; margin-right: 8px; background: var(--bc); box-shadow: 0 0 8px var(--bc); }
+.gd-bar { height: 9px; background: rgba(255,255,255,.1); }
+.gd-bar i { background: var(--bc); box-shadow: 0 0 10px var(--bc); }
+.gd-env li b { color: #fff; font-size: 17px; }
+
+@media (max-width: 860px) {
+  .adegan { min-height: 190px; margin: -60px -16px -34px; padding: 70px 16px 44px; }
+  .adegan-art { width: 100%; -webkit-mask-image: linear-gradient(90deg, transparent 0, rgba(0,0,0,.5) 25%, #000 55%), linear-gradient(0deg, transparent 0, #000 22%); mask-image: linear-gradient(90deg, transparent 0, rgba(0,0,0,.5) 25%, #000 55%), linear-gradient(0deg, transparent 0, #000 22%); }
+  .adegan-kicker { font-size: 12px; }
+  .adegan h1 { font-size: 28px; }
+  .adegan p { font-size: 12.5px; }
+  .adegan-text { max-width: 60%; padding-left: 0; }
+  .adegan h1, .adegan p, .adegan-kicker { text-shadow: 0 2px 8px #000, 0 0 2px #000; }
+  .konten { padding: 10px; }
+  .gd-kpi { grid-template-columns: 1fr; }
+  .gd-kpi-icon { position: absolute; top: 9px; right: 9px; }
+  .gd-kpi-icon svg, .kpi-icon svg { width: 22px; height: 22px; }
+  .gd-kpi-label { padding-right: 26px; }
+}
+@media (min-width: 861px) {
+  .adegan { min-height: 330px; margin-bottom: -60px; padding-bottom: 80px; }
+  .adegan-art { width: auto; height: 100%; max-width: 78%; object-fit: cover; object-position: right top; }
+}
+@media (max-width: 860px) {
+  .adegan { min-height: 250px; align-items: flex-start; padding-top: 66px; margin-bottom: -40px; }
+  .adegan-art { top: 40px; height: calc(100% - 40px); width: 100%; object-fit: cover; object-position: 78% 30%;
+    -webkit-mask-image: linear-gradient(90deg, rgba(0,0,0,.35) 0, #000 45%), linear-gradient(0deg, transparent 0, #000 20%); mask-image: linear-gradient(90deg, rgba(0,0,0,.35) 0, #000 45%), linear-gradient(0deg, transparent 0, #000 20%); }
+  .adegan-text { max-width: 62%; }
+  .adegan h1 { font-size: 26px; }
+}

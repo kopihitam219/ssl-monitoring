@@ -223,16 +223,18 @@ function App({ user, onSessionChange, onLoggedOut }) {
         </header>
 
         {BANNER[view] && (
-          <section className="banner" style={{ '--fc': BANNER[view].warna, '--latar': `url(/art/latar/${view}.jpg)` }} aria-label={title}>
-            <div className="banner-text">
-              <span className="banner-kicker">Enterprise Security Portal</span>
-              <h1>{BANNER[view].a}<em>{BANNER[view].b}</em></h1>
-              <p>{BANNER[view].tag}</p>
+          <section className="adegan" style={{ '--fc': BANNER[view].warna }} aria-label={title}>
+            <img className="adegan-art" src={`/art/hero/${view}.jpg`} alt="" aria-hidden="true" />
+            <div className="adegan-text">
+              <span className="adegan-kicker">Enterprise Security Portal</span>
+              {view === 'dashboard'
+                ? <h1>SSL <em>Monitoring</em></h1>
+                : <h1>{BANNER[view].a}<em>{BANNER[view].b}</em></h1>}
+              <p>{view === 'dashboard' ? 'Safe Today, Secure Tomorrow' : BANNER[view].tag}</p>
             </div>
-            <img className="banner-dekor" src={`/art/dekor/${view}.jpg`} alt="" aria-hidden="true" />
-            <img className="banner-art" src={`/art/fitur/${view}.jpg`} alt="" aria-hidden="true" />
           </section>
         )}
+        <div className="konten">
         {error && <div className="alert error">Tidak bisa memuat data: {error}</div>}
         {toast && <div className={`alert ${toast.ok ? 'success' : 'error'}`} onClick={() => setToast(null)}>{toast.text}</div>}
         {empty && !['settings', 'excel', 'jobs', 'audit', 'users', 'health'].includes(view) && (
@@ -286,6 +288,7 @@ function App({ user, onSessionChange, onLoggedOut }) {
         {view === 'audit' && can('audit') && <AuditView />}
         {view === 'users' && isAdmin && <UsersView />}
         {view === 'health' && can('health') && <HealthView />}
+        </div>
       </main>
       <nav className="bottom-nav" aria-label="Menu cepat">
         <button className={view === 'dashboard' ? 'on' : ''} onClick={() => go('dashboard')}><Home size={20} /><span>Dashboard</span></button>
