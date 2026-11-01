@@ -1373,3 +1373,33 @@ main { padding-top: 0; }
   .adegan-art { top: 48px !important; height: 92px !important; }
   .adegan h1 { font-size: 22px; }
 }
+
+/* ===== kucing berkedip (kelopak atas & bawah, bayangan 3D) ===== */
+.adegan-art img { display: block; width: 100%; height: 100%; }
+@media (max-width: 860px) { .adegan-art { max-width: none !important; } }
+.kelopak { position: absolute; border-radius: 50%; overflow: hidden; pointer-events: none; transform: scale(1.18); }
+.kelopak::before, .kelopak::after { content: ""; position: absolute; left: -4%; right: -4%; height: 100%;
+  animation: 4.6s ease-in-out infinite; animation-delay: inherit; }
+/* kelopak atas: bulu hitam dengan cahaya dari atas, lipatan gelap di tepi, garis bulu mata */
+.kelopak::before { top: 0; transform: translateY(-102%); animation-name: kedip-atas;
+  border-radius: 0 0 50% 50% / 0 0 22% 22%;
+  background: linear-gradient(180deg, #34407a 0%, #1b2250 30%, #0d1130 62%, #05060f 88%, #000 100%);
+  box-shadow: inset 0 -3px 0 #000, inset 0 -5px 3px rgba(80, 140, 255, .35), inset 0 2px 4px rgba(140, 170, 255, .35), 0 3px 4px rgba(0, 0, 0, .55); }
+/* kelopak bawah: naik sedikit supaya kedipan terlihat bulat seperti 3D */
+.kelopak::after { bottom: 0; transform: translateY(102%); animation-name: kedip-bawah;
+  border-radius: 50% 50% 0 0 / 40% 40% 0 0;
+  background: linear-gradient(0deg, #1d2450 0%, #0e1233 55%, #04050d 100%);
+  box-shadow: inset 0 2px 0 #000, inset 0 -2px 4px rgba(120, 160, 255, .25); }
+@keyframes kedip-atas {
+  0%, 88%, 100% { transform: translateY(-102%); }
+  90.5% { transform: translateY(-48%); }
+  92%, 93.2% { transform: translateY(-18%); }
+  95.5% { transform: translateY(-70%); }
+}
+@keyframes kedip-bawah {
+  0%, 88%, 100% { transform: translateY(102%); }
+  90.5% { transform: translateY(80%); }
+  92%, 93.2% { transform: translateY(56%); }
+  95.5% { transform: translateY(88%); }
+}
+@media (prefers-reduced-motion: reduce) { .kelopak::before, .kelopak::after { animation: none; } }

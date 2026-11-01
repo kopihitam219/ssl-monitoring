@@ -51,6 +51,19 @@ const BANNER = {
   settings: { a: '', b: 'Settings', tag: 'Configure. Optimize. Empower.', warna: '#22d3ee' },
 };
 
+// posisi mata kucing per fitur (persen dari gambar: kiri, atas, lebar, tinggi) untuk animasi berkedip.
+// Jobs tidak diberi kedip karena matanya memang terpejam (tersenyum).
+const KUCING = {
+  dashboard: { rasio: '1033 / 420', mata: [[66.60, 46.43, 6.00, 12.86], [75.41, 45.71, 4.45, 12.38]] },
+  inventory: { rasio: '918 / 420', mata: [[69.06, 40.24, 6.32, 12.38], [78.32, 40.00, 5.23, 11.43]] },
+  excel: { rasio: '994 / 420', mata: [[70.02, 46.90, 5.63, 11.90], [82.29, 47.14, 4.83, 11.43]] },
+  jobs: { rasio: '724 / 420', mata: [] },
+  audit: { rasio: '926 / 420', mata: [[67.39, 36.43, 5.18, 10.48], [75.59, 34.76, 5.62, 11.43]] },
+  health: { rasio: '930 / 420', mata: [[71.40, 41.90, 6.24, 11.43]] },
+  users: { rasio: '929 / 420', mata: [[65.23, 41.19, 4.74, 10.48], [74.70, 34.76, 6.24, 12.38]] },
+  settings: { rasio: '859 / 420', mata: [[72.06, 42.14, 6.75, 12.38], [82.19, 45.00, 5.12, 11.43]] },
+};
+
 /** Pintu masuk: cek status login → tampilkan Setup / Login / Aplikasi. */
 export default function Root() {
   const [auth, setAuth] = useState({ loading: true });
@@ -225,7 +238,12 @@ function App({ user, onSessionChange, onLoggedOut }) {
         {BANNER[view] && (
           <section className="adegan" style={{ '--fc': BANNER[view].warna }} aria-label={title}>
             <img className="adegan-latar" src={`/art/adegan/${view}-latar.jpg`} alt="" aria-hidden="true" />
-            <img className="adegan-art" src={`/art/adegan/${view}.webp`} alt="" aria-hidden="true" />
+            <div className="adegan-art" style={{ aspectRatio: KUCING[view]?.rasio }} aria-hidden="true">
+              <img src={`/art/adegan/${view}.webp`} alt="" />
+              {KUCING[view]?.mata.map(([l, t, w, h], i) => (
+                <i key={i} className="kelopak" style={{ left: `${l}%`, top: `${t}%`, width: `${w}%`, height: `${h}%`, animationDelay: `${(view.length % 4) * 0.7}s` }} />
+              ))}
+            </div>
             <div className="adegan-text">
               {view === 'dashboard'
                 ? <h1>SSL <em>Monitoring</em></h1>
