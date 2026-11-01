@@ -64,6 +64,9 @@ export default function HealthView() {
   useEffect(() => {
     if (paused) return;
     let alive = true;
+    let t;
+    // Muat berikutnya baru dijadwalkan setelah yang sebelumnya selesai, jadi request tidak menumpuk
+    // saat server lambat. Di Vercel (cloud) cukup tiap 15 detik; di laptop/server sendiri tiap 5 detik.
     const load = () => api('/api/health').then((r) => {
       if (!alive) return;
       const H = hist.current;
@@ -71,10 +74,11 @@ export default function HealthView() {
       H.mem = [...H.mem, r.memory.pct].slice(-MAX);
       H.app = [...H.app, (r.app.rss / r.memory.total) * 100].slice(-MAX);
       setH(r); setError(''); force((n) => n + 1);
-    }).catch((e) => alive && setError(e.message));
+      return r.cloud ? 15000 : 5000;
+    }).catch((e) => { if (alive) setError(e.message); return 15000; })
+      .then((ms) => { if (alive) t = setTimeout(load, ms); });
     load();
-    const t = setInterval(load, 5000);
-    return () => { alive = false; clearInterval(t); };
+    return () => { alive = false; clearTimeout(t); };
   }, [paused]);
 
   if (!h) return <section className="panel">{error ? <div className="alert error">{error}</div> : <p className="muted">Mengukur…</p>}</section>;
@@ -86,7 +90,7 @@ export default function HealthView() {
         <Overall size={20} />
         <div>
           <b>{h.overall === 'ok' ? 'Semua normal' : h.overall === 'warn' ? 'Ada yang perlu diperhatikan' : 'Ada yang bermasalah'}</b>
-          <div className="small">Diperbarui {fmtDateTime(h.at)} · otomatis tiap 5 detik{paused ? ' (dijeda)' : ''}</div>
+          <div className="small">Diperbarui {fmtDateTime(h.at)} · otomatis tiap {h.cloud ? 15 : 5} detik{paused ? ' (dijeda)' : ''}</div>
         </div>
         <button className="btn ghost sm" onClick={() => setPaused(!paused)}>{paused ? <><Play size={14} /> Lanjutkan</> : <><Pause size={14} /> Jeda</>}</button>
       </div>
