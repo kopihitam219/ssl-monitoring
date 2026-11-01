@@ -1404,34 +1404,41 @@ main { padding-top: 0; }
 }
 @media (prefers-reduced-motion: reduce) { .kelopak::before, .kelopak::after { animation: none; } }
 
-/* ===== kucing hidup: kepala menoleh, mata berkedip, ekor bergoyang, tangan bergerak =====
-   Gambar tidak melayang dan tidak dipotong; hanya bagian tubuh kucing yang bergerak. */
-.kucing-hidup { position: relative; }
-.kucing-hidup > img, .kucing-hidup .bagian img { display: block; width: 100%; height: 100%; }
-.kucing-hidup .bagian { position: absolute; inset: 0; pointer-events: none; will-change: transform; }
-.kucing-hidup .bagian.kepala { animation: kucing-kepala 5.2s ease-in-out infinite; }
-.kucing-hidup .bagian.ekor { animation: kucing-ekor 2.6s ease-in-out infinite; }
-.kucing-hidup .bagian.tangan { animation: kucing-tangan 2.2s ease-in-out infinite; }
-.kucing-hidup .bagian.tangan-lambai { animation: kucing-lambai 1.6s ease-in-out infinite; }
-@keyframes kucing-kepala {
-  0%, 100% { transform: rotate(0deg); }
-  20% { transform: rotate(-2.6deg); }
-  45% { transform: rotate(-2.6deg); }
-  65% { transform: rotate(2.2deg); }
-  85% { transform: rotate(2.2deg); }
+/* ===== kucing bergerak (semua fitur + halaman login) ===== */
+/* header fitur: kucing melayang naik-turun, sedikit miring, cahaya berdenyut, kilau lewat */
+.adegan-art { animation: kucing-melayang 5.5s ease-in-out infinite; transform-origin: 70% 100%; will-change: transform; }
+.adegan-art img { animation: kucing-cahaya 3.2s ease-in-out infinite; }
+.adegan-art::after { content: ""; position: absolute; inset: 0; pointer-events: none; overflow: hidden;
+  background: linear-gradient(105deg, transparent 40%, rgba(255, 255, 255, .16) 50%, transparent 60%) no-repeat;
+  background-size: 250% 100%; background-position: 150% 0; animation: kucing-kilau 6.5s ease-in-out infinite;
+  -webkit-mask-image: linear-gradient(90deg, transparent 0, #000 35%); mask-image: linear-gradient(90deg, transparent 0, #000 35%); }
+@keyframes kucing-melayang {
+  0%, 100% { transform: translateY(0) rotate(0deg) scale(1); }
+  25% { transform: translateY(-5px) rotate(-.6deg) scale(1.012); }
+  50% { transform: translateY(-8px) rotate(0deg) scale(1.02); }
+  75% { transform: translateY(-4px) rotate(.6deg) scale(1.012); }
 }
-@keyframes kucing-ekor { 0%, 100% { transform: rotate(-6deg); } 50% { transform: rotate(6deg); } }
-@keyframes kucing-tangan { 0%, 100% { transform: rotate(0deg); } 50% { transform: rotate(-6deg) translateY(-1%); } }
-@keyframes kucing-lambai { 0%, 100% { transform: rotate(-9deg); } 50% { transform: rotate(9deg); } }
-
-/* halaman login: kucing tampil utuh di area kiri (tanpa zoom / potong) */
-.auth-art { container-type: size; }
-.auth-art .login-kucing { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%);
-  width: min(100cqw, 100cqh * 695 / 720); height: min(100cqh, 100cqw * 720 / 695);
-  -webkit-mask-image: linear-gradient(90deg, #000 70%, transparent); mask-image: linear-gradient(90deg, #000 70%, transparent); }
-.auth-art .login-kucing img { object-fit: fill !important; -webkit-mask-image: none !important; mask-image: none !important; animation: none !important; transform: none; }
-@media (max-width: 860px) {
-  .auth-art .login-kucing { -webkit-mask-image: linear-gradient(180deg, #000 72%, transparent); mask-image: linear-gradient(180deg, #000 72%, transparent); }
+@keyframes kucing-cahaya {
+  0%, 100% { filter: drop-shadow(0 0 6px color-mix(in srgb, var(--fc, #3d8bff) 45%, transparent)) brightness(1); }
+  50% { filter: drop-shadow(0 0 18px color-mix(in srgb, var(--fc, #3d8bff) 85%, transparent)) brightness(1.08); }
 }
+@keyframes kucing-kilau { 0%, 60% { background-position: 150% 0; } 85%, 100% { background-position: -60% 0; } }
 
-@media (prefers-reduced-motion: reduce) { .kucing-hidup .bagian { animation: none !important; } }
+/* halaman login: adegan kucing bergerak pelan (zoom & geser), cahaya berdenyut, kilau lewat */
+.auth-art { overflow: hidden; }
+.auth-art img { animation: login-gerak 6s ease-in-out infinite, login-cahaya 4s ease-in-out infinite; transform-origin: 60% 40%; will-change: transform; }
+.auth-art::after { content: ""; position: absolute; inset: 0; pointer-events: none;
+  background: linear-gradient(105deg, transparent 42%, rgba(160, 200, 255, .14) 50%, transparent 58%) no-repeat;
+  background-size: 250% 100%; background-position: 150% 0; animation: kucing-kilau 7s ease-in-out infinite; }
+/* hanya melayang (tanpa zoom) supaya kucing tidak pernah terpotong */
+@keyframes login-gerak {
+  0%, 100% { transform: translateY(0) rotate(0deg); }
+  25% { transform: translateY(-5px) rotate(-.4deg); }
+  50% { transform: translateY(-9px) rotate(0deg); }
+  75% { transform: translateY(-4px) rotate(.4deg); }
+}
+@keyframes login-cahaya { 0%, 100% { filter: brightness(1) saturate(1.05); } 50% { filter: brightness(1.12) saturate(1.2); } }
+
+@media (prefers-reduced-motion: reduce) {
+  .adegan-art, .adegan-art img, .adegan-art::after, .auth-art img, .auth-art::after { animation: none !important; }
+}
