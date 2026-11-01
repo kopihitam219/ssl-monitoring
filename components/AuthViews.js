@@ -28,7 +28,14 @@ function PasswordInput({ value, onChange, autoComplete, placeholder, autoFocus }
 function AuthShell({ title, subtitle, children }) {
   return (
     <div className="auth-page">
-      <div className="auth-art" aria-hidden="true"><img src="/art/login-kucing.jpg" alt="" /></div>
+      <div className="auth-art" aria-hidden="true">
+        {/* kucing login tampil utuh + mata berkedip (posisi mata dalam persen gambar) */}
+        <div className="login-kucing">
+          <img src="/art/login-kucing.jpg" alt="" />
+          <i className="kelopak" style={{ left: '51.08%', top: '41.32%', width: '8.63%', height: '7.64%' }} />
+          <i className="kelopak" style={{ left: '65.76%', top: '43.06%', width: '6.62%', height: '6.94%' }} />
+        </div>
+      </div>
       <div className="auth-card">
         <div className="auth-brand">
           <ShieldHalf size={40} className="brand-icon" />
