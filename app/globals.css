@@ -1413,3 +1413,15 @@ main { padding-top: 0; }
 @media (max-width: 860px) {
   .auth-art .login-kucing { -webkit-mask-image: linear-gradient(180deg, #000 72%, transparent); mask-image: linear-gradient(180deg, #000 72%, transparent); }
 }
+
+/* ===== video kucing (menggantikan gambar diam + kedip CSS) ===== */
+/* header fitur: video 16:9 utuh di kanan (tidak dipotong), tepi kiri memudar ke latar */
+video.adegan-art { aspect-ratio: 16 / 9; width: auto !important; max-width: 60% !important; object-fit: contain !important;
+  border-radius: 12px; background: transparent;
+  -webkit-mask-image: linear-gradient(90deg, transparent 0, #000 22%) !important; mask-image: linear-gradient(90deg, transparent 0, #000 22%) !important; }
+@media (max-width: 860px) {
+  video.adegan-art { width: auto !important; max-width: 62% !important; object-fit: contain !important; }
+}
+/* login: video 16:9 utuh */
+.auth-art .login-kucing { width: min(100cqw, 100cqh * 16 / 9); height: min(100cqh, 100cqw * 9 / 16); }
+.auth-art .login-kucing video { display: block; width: 100%; height: 100%; object-fit: contain; }

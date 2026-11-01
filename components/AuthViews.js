@@ -11,6 +11,7 @@ function MicrosoftLogo() {
   );
 }
 import { api } from './ui';
+import VideoKucing from './VideoKucing';
 import { Modal } from './Modal';
 
 function PasswordInput({ value, onChange, autoComplete, placeholder, autoFocus }) {
@@ -29,12 +30,8 @@ function AuthShell({ title, subtitle, children }) {
   return (
     <div className="auth-page">
       <div className="auth-art" aria-hidden="true">
-        {/* kucing login tampil utuh + mata berkedip (posisi mata dalam persen gambar) */}
-        <div className="login-kucing">
-          <img src="/art/login-kucing.jpg" alt="" />
-          <i className="kelopak" style={{ left: '51.08%', top: '41.32%', width: '8.63%', height: '7.64%' }} />
-          <i className="kelopak" style={{ left: '65.76%', top: '43.06%', width: '6.62%', height: '6.94%' }} />
-        </div>
+        {/* video kucing login (tampil utuh, berputar terus) */}
+        <div className="login-kucing"><VideoKucing id="login" /></div>
       </div>
       <div className="auth-card">
         <div className="auth-brand">
