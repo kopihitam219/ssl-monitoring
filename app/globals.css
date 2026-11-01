@@ -1407,7 +1407,6 @@ main { padding-top: 0; }
 /* ===== kucing hidup: kepala menoleh, mata berkedip, ekor bergoyang, tangan bergerak =====
    Gambar tidak melayang dan tidak dipotong; hanya bagian tubuh kucing yang bergerak. */
 .kucing-hidup { position: relative; }
-.kucing-hidup.adegan-art { position: absolute; } /* di header tetap menempel di kanan */
 .kucing-hidup > img, .kucing-hidup .bagian img { display: block; width: 100%; height: 100%; }
 .kucing-hidup .bagian { position: absolute; inset: 0; pointer-events: none; will-change: transform; }
 .kucing-hidup .bagian.kepala { animation: kucing-kepala 5.2s ease-in-out infinite; }
