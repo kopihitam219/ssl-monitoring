@@ -163,7 +163,7 @@ function App({ user, onSessionChange, onLoggedOut }) {
         <div className="brand">
           <ShieldHalf size={34} className="brand-icon" />
           <div>
-            <div className="brand-name">SSL Monitoring</div>
+            <div className="brand-name">SSL <em>Monitoring</em></div>
             <div className="brand-tag">Safe Today, Secure Tomorrow</div>
           </div>
         </div>
@@ -197,8 +197,7 @@ function App({ user, onSessionChange, onLoggedOut }) {
         <header className="topbar">
           <button className="icon-btn menu" onClick={() => setNavOpen(true)} aria-label="Menu"><Menu size={20} /></button>
           <div className="page-title">
-            <h1>{title}</h1>
-            <p className="muted">{subtitle}</p>
+            {view !== 'dashboard' && <><h1>{title}</h1><p className="muted">{subtitle}</p></>}
           </div>
           <div className="top-actions">
             <PeriodPicker value={period} onChange={changePeriod} />
@@ -211,6 +210,16 @@ function App({ user, onSessionChange, onLoggedOut }) {
           </div>
         </header>
 
+        {view === 'dashboard' && (
+          <section className="hero" aria-label="SSL Monitoring">
+            <div className="hero-text">
+              <span className="hero-kicker">Enterprise Security Portal</span>
+              <h1>SSL <em>Monitoring</em></h1>
+              <p>Safe Today, Secure Tomorrow</p>
+            </div>
+            <img className="hero-art" src="/art/banner-kucing.jpg" alt="" aria-hidden="true" />
+          </section>
+        )}
         {error && <div className="alert error">Tidak bisa memuat data: {error}</div>}
         {toast && <div className={`alert ${toast.ok ? 'success' : 'error'}`} onClick={() => setToast(null)}>{toast.text}</div>}
         {empty && !['settings', 'excel', 'jobs', 'audit', 'users', 'health'].includes(view) && (
@@ -265,6 +274,17 @@ function App({ user, onSessionChange, onLoggedOut }) {
         {view === 'users' && isAdmin && <UsersView />}
         {view === 'health' && can('health') && <HealthView />}
       </main>
+      <nav className="bottom-nav" aria-label="Menu cepat">
+        <button className={view === 'dashboard' ? 'on' : ''} onClick={() => go('dashboard')}><Home size={20} /><span>Dashboard</span></button>
+        <button className={view === 'inventory' ? 'on' : ''} onClick={() => { go('inventory'); setStatusFilter(''); setPreset(null); }}><ShieldCheck size={20} /><span>Inventory</span></button>
+        {can('sync')
+          ? <button className="scan" onClick={() => sync()} disabled={syncing || data?.scanning} aria-label="Sync Now"><RefreshCw size={22} className={syncing || data?.scanning ? 'spin' : ''} /><span>Sync</span></button>
+          : <button className={view === 'excel' ? 'on' : ''} onClick={() => go('excel')}><FileSpreadsheet size={20} /><span>Source</span></button>}
+        {can('sync')
+          ? <button className={view === 'excel' ? 'on' : ''} onClick={() => go('excel')}><FileSpreadsheet size={20} /><span>Source</span></button>
+          : null}
+        <button onClick={() => setNavOpen(true)}><Menu size={20} /><span>Menu</span></button>
+      </nav>
       {pwOpen && <ChangePasswordDialog forced={!!user.mustChange} onClose={() => setPwOpen(false)}
         onDone={() => { setToast({ ok: true, text: 'Password berhasil diganti.' }); if (user.mustChange) onSessionChange(); }} />}
     </div>

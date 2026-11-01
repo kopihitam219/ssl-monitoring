@@ -28,12 +28,13 @@ function PasswordInput({ value, onChange, autoComplete, placeholder, autoFocus }
 function AuthShell({ title, subtitle, children }) {
   return (
     <div className="auth-page">
+      <div className="auth-art" aria-hidden="true"><img src="/art/login-kucing.jpg" alt="" /></div>
       <div className="auth-card">
         <div className="auth-brand">
           <ShieldHalf size={40} className="brand-icon" />
           <div>
-            <div className="brand-name">SSL Monitoring</div>
-            <div className="brand-tag">Safe Today, Secure Tomorrow</div>
+            <div className="brand-name">SSL <em>Monitoring</em></div>
+            <div className="brand-tag">Secure. Monitor. Protect.</div>
           </div>
         </div>
         <h1>{title}</h1>
@@ -63,7 +64,7 @@ export function LoginView({ onLogin, expired, microsoft, loginError }) {
   }
 
   return (
-    <AuthShell title="Masuk" subtitle="Gunakan akun Admin atau Monitoring Anda.">
+    <AuthShell title="Login to Your Account" subtitle="Masuk dengan akun Admin atau Monitoring Anda.">
       {expired && !error && <div className="alert info">Sesi Anda berakhir. Silakan login lagi.</div>}
       {microsoft && (
         <>
@@ -73,10 +74,10 @@ export function LoginView({ onLogin, expired, microsoft, loginError }) {
       )}
       <form className="form" onSubmit={submit}>
         <label className="field"><span>Username</span>
-          <input value={username} onChange={(e) => setUsername(e.target.value)} autoComplete="username" autoFocus required />
+          <input value={username} onChange={(e) => setUsername(e.target.value)} autoComplete="username" placeholder="Username" autoFocus required />
         </label>
         <label className="field"><span>Password</span>
-          <PasswordInput value={password} onChange={(e) => setPassword(e.target.value)} autoComplete="current-password" />
+          <PasswordInput value={password} onChange={(e) => setPassword(e.target.value)} autoComplete="current-password" placeholder="Password" />
         </label>
         {error && <div className="alert error">{error}</div>}
         <button className="btn primary full" disabled={busy}><LogIn size={16} /> {busy ? 'Memeriksa…' : 'Masuk'}</button>
