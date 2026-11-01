@@ -67,9 +67,8 @@ export default function InventoryTable({ title = 'SSL Inventory', subtitle = 'Da
     .catch((e) => { setFilesState('error'); setFilesErr(e.message); return null; }), []);
   /** Buka form tambah domain; kalau daftar file belum termuat, muat ulang dulu (bukan tombol mati tanpa keterangan). */
   async function bukaTambah() {
-    if (fileId || files.length) { setEditing('new'); return; }
-    const f = await loadFiles();
-    if (f && f.length) setEditing('new');
+    if (!fileId && !files.length) await loadFiles(); // pastikan daftar file terbaru; kosong → form membuat file "Input Manual"
+    setEditing('new');
   }
   useEffect(() => { loadFiles(); }, [loadFiles, reloadKey]);
   useEffect(() => setStatus(initialStatus), [initialStatus]);
@@ -155,8 +154,7 @@ export default function InventoryTable({ title = 'SSL Inventory', subtitle = 'Da
             </label>
           )}
           {can('export') && <a className="btn ghost" href={`/api/export?${params}`}><Download size={15} /> Export</a>}
-          {editable && <button className="btn primary" onClick={bukaTambah} disabled={!fileId && filesState === 'ok' && !files.length}
-            title={!fileId && filesState === 'ok' && !files.length ? 'Upload Excel atau buat file dulu di menu Source of Truth' : ''}><Plus size={15} /> Tambah domain</button>}
+          {editable && <button className="btn primary" onClick={bukaTambah}><Plus size={15} /> Tambah domain</button>}
         </div>
       </div>
 
@@ -265,8 +263,9 @@ export default function InventoryTable({ title = 'SSL Inventory', subtitle = 'Da
 
       {openId && <DomainDrawer id={openId} onClose={() => setOpenId(null)} onChanged={onChanged} />}
       {editing && (
-        <DomainForm domain={editing === 'new' ? null : editing} files={files} fileId={fileId || null} onClose={() => setEditing(null)}
+        <DomainForm domain={editing === 'new' ? null : editing} files={files} groups={groups} fileId={fileId || null} onClose={() => setEditing(null)}
           onSaved={(r) => {
+            loadFiles();
             onNotice?.({ ok: true, text: editing === 'new'
               ? `${r.domain} ditambahkan dan sudah dicek (status: ${STATUS[r.status]?.label || r.status}).`
               : 'Perubahan disimpan.' });

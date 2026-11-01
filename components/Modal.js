@@ -55,7 +55,9 @@ export function ConfirmDialog({ title, message, confirmLabel = 'Ya, lanjutkan', 
 const ENVS = ['Production', 'Development', 'UAT', 'Staging'];
 
 /** Form tambah / ubah domain Source of Truth. domain=null → tambah baru. */
-export function DomainForm({ domain, onClose, onSaved, files = [], fileId = null }) {
+export const FILE_MANUAL = 'Input Manual';
+
+export function DomainForm({ domain, onClose, onSaved, files = [], fileId = null, groups = [] }) {
   const editing = !!domain;
   const [f, setF] = useState({
     domain: domain?.domain || '',
@@ -69,15 +71,33 @@ export function DomainForm({ domain, onClose, onSaved, files = [], fileId = null
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
   const set = (k) => (e) => setF({ ...f, [k]: e.target.value });
+  // Belum ada file Source of Truth sama sekali → domain disimpan ke file "Input Manual" (dibuat otomatis).
+  const tanpaFile = !editing && !fileId && !files.length;
+  const [groupId, setGroupId] = useState('');
+
+  /** Cari / buat file "Input Manual" untuk domain yang ditambahkan tanpa Excel. */
+  async function fileManual() {
+    try {
+      const r = await api('/api/files', { method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name: FILE_MANUAL, proxy_mode: 'direct', group_id: groupId || null }) });
+      return r.file.id;
+    } catch (e) {
+      const r = await api('/api/files');
+      const ada = r.files.find((x) => x.name.toLowerCase() === FILE_MANUAL.toLowerCase());
+      if (ada) return ada.id;
+      throw e;
+    }
+  }
 
   async function submit(e) {
     e.preventDefault();
     setBusy(true); setError('');
     try {
+      const body = tanpaFile ? { ...f, file_id: await fileManual() } : f;
       const res = await api(editing ? `/api/excel/${domain.id}` : '/api/excel', {
         method: editing ? 'PUT' : 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(f),
+        body: JSON.stringify(body),
       });
       onSaved(res);
       onClose();
@@ -90,6 +110,16 @@ export function DomainForm({ domain, onClose, onSaved, files = [], fileId = null
   return (
     <Modal title={editing ? 'Ubah domain' : 'Tambah domain'} onClose={busy ? () => {} : onClose}>
       <form onSubmit={submit} className="form">
+        {tanpaFile ? (
+          <label className="field">
+            <span>Group dashboard</span>
+            <select value={groupId} onChange={(e) => setGroupId(e.target.value)}>
+              <option value="">Tanpa group</option>
+              {groups.map((g) => <option key={g.id} value={g.id}>{g.name}</option>)}
+            </select>
+            <small className="muted">Belum ada file Excel — domain disimpan ke file "{FILE_MANUAL}" yang dibuat otomatis.</small>
+          </label>
+        ) : (
         <label className="field">
           <span>File Source of Truth *{editing ? ' (pilih file lain untuk memindahkan domain)' : ''}</span>
           <select value={f.file_id} onChange={set('file_id')} required>
@@ -97,6 +127,7 @@ export function DomainForm({ domain, onClose, onSaved, files = [], fileId = null
             {f.file_id && !files.some((x) => String(x.id) === String(f.file_id)) && <option value={f.file_id}>File ini</option>}
           </select>
         </label>
+        )}
         <div className="form-row">
           <label className="field grow">
             <span>Domain *</span>

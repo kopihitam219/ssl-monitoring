@@ -2,7 +2,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { UploadCloud, FileDown, FileSpreadsheet, FilePlus2, Eye, Pencil, Trash2, Upload, Network, FolderKanban, Plus } from 'lucide-react';
 import InventoryTable from './InventoryTable';
-import { Modal, ConfirmDialog } from './Modal';
+import { Modal, ConfirmDialog, DomainForm } from './Modal';
 import { api, fmtDateTime } from './ui';
 import { useSession } from './session';
 
@@ -194,6 +194,7 @@ export function SourceOfTruthView({ reloadKey, onChanged }) {
           <div className="toolbar">
             {can('export') && <a className="btn ghost" href="/api/template"><FileDown size={15} /> Template kosong</a>}
             {manage && <button className="btn ghost" onClick={() => setDialog({ type: 'create' })}><FilePlus2 size={15} /> Buat file kosong</button>}
+            {manage && <button className="btn primary" onClick={() => setDialog({ type: 'domain' })}><Plus size={15} /> Tambah domain</button>}
           </div>
         </div>
         {!proxyConfigured && (
@@ -292,6 +293,10 @@ export function SourceOfTruthView({ reloadKey, onChanged }) {
           reloadKey={reloadKey} onChanged={changed} editable={manage} onNotice={setMsg} />
       )}
 
+      {dialog?.type === 'domain' && (
+        <DomainForm files={files || []} groups={groups} fileId={cur?.id || null} onClose={() => setDialog(null)}
+          onSaved={(r) => { setMsg({ ok: true, text: `${r.domain} ditambahkan dan sudah dicek.` }); changed(); }} />
+      )}
       {dialog?.type === 'create' && (
         <FileNameDialog title="Buat file Source of Truth kosong" withProxy groups={groups} onClose={() => setDialog(null)}
           onSave={async (b) => { const r = await api('/api/files', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(b) }); pick(r.file.id); setMsg({ ok: true, text: `File "${r.file.name}" dibuat. Tambahkan domain lewat tombol "Tambah domain".` }); changed(); }} />
