@@ -60,7 +60,17 @@ export default function InventoryTable({ title = 'SSL Inventory', subtitle = 'Da
   const scope = fileId ? String(fileId) : '';
   const groupScope = groupId != null ? String(groupId) : group;
 
-  const loadFiles = useCallback(() => api('/api/files').then((r) => { setFiles(r.files); setGroups(r.groups || []); }).catch(() => {}), []);
+  const [filesState, setFilesState] = useState('loading'); // loading | ok | error
+  const [filesErr, setFilesErr] = useState('');
+  const loadFiles = useCallback(() => api('/api/files')
+    .then((r) => { setFiles(r.files); setGroups(r.groups || []); setFilesState('ok'); setFilesErr(''); return r.files; })
+    .catch((e) => { setFilesState('error'); setFilesErr(e.message); return null; }), []);
+  /** Buka form tambah domain; kalau daftar file belum termuat, muat ulang dulu (bukan tombol mati tanpa keterangan). */
+  async function bukaTambah() {
+    if (fileId || files.length) { setEditing('new'); return; }
+    const f = await loadFiles();
+    if (f && f.length) setEditing('new');
+  }
   useEffect(() => { loadFiles(); }, [loadFiles, reloadKey]);
   useEffect(() => setStatus(initialStatus), [initialStatus]);
 
@@ -145,8 +155,8 @@ export default function InventoryTable({ title = 'SSL Inventory', subtitle = 'Da
             </label>
           )}
           {can('export') && <a className="btn ghost" href={`/api/export?${params}`}><Download size={15} /> Export</a>}
-          {editable && <button className="btn primary" onClick={() => setEditing('new')} disabled={!files.length}
-            title={!files.length ? 'Upload Excel atau buat file dulu di menu Source of Truth' : ''}><Plus size={15} /> Tambah domain</button>}
+          {editable && <button className="btn primary" onClick={bukaTambah} disabled={!fileId && filesState === 'ok' && !files.length}
+            title={!fileId && filesState === 'ok' && !files.length ? 'Upload Excel atau buat file dulu di menu Source of Truth' : ''}><Plus size={15} /> Tambah domain</button>}
         </div>
       </div>
 
@@ -176,6 +186,7 @@ export default function InventoryTable({ title = 'SSL Inventory', subtitle = 'Da
         </div>
       )}
       {error && <div className="alert error">{error}</div>}
+      {editable && filesErr && <div className="alert error">Daftar file Source of Truth gagal dimuat: {filesErr} <button className="link inline" onClick={loadFiles}>Coba lagi</button></div>}
 
       <div className="table-wrap">
         <table className="inv-table">

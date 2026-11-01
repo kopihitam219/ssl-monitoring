@@ -94,6 +94,7 @@ export function DomainForm({ domain, onClose, onSaved, files = [], fileId = null
           <span>File Source of Truth *{editing ? ' (pilih file lain untuk memindahkan domain)' : ''}</span>
           <select value={f.file_id} onChange={set('file_id')} required>
             {files.map((x) => <option key={x.id} value={x.id}>{x.name}{x.group_name ? ` · ${x.group_name}` : ''} ({x.proxy_mode === 'proxy' ? 'dengan proxy' : 'tanpa proxy'})</option>)}
+            {f.file_id && !files.some((x) => String(x.id) === String(f.file_id)) && <option value={f.file_id}>File ini</option>}
           </select>
         </label>
         <div className="form-row">

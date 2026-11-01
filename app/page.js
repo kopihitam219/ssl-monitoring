@@ -227,7 +227,6 @@ function App({ user, onSessionChange, onLoggedOut }) {
             <img className="adegan-latar" src={`/art/adegan/${view}-latar.jpg`} alt="" aria-hidden="true" />
             <img className="adegan-art" src={`/art/adegan/${view}.webp`} alt="" aria-hidden="true" />
             <div className="adegan-text">
-              <span className="adegan-kicker">Enterprise Security Portal</span>
               {view === 'dashboard'
                 ? <h1>SSL <em>Monitoring</em></h1>
                 : <h1>{BANNER[view].a}<em>{BANNER[view].b}</em></h1>}
