@@ -224,7 +224,8 @@ function App({ user, onSessionChange, onLoggedOut }) {
 
         {BANNER[view] && (
           <section className="adegan" style={{ '--fc': BANNER[view].warna }} aria-label={title}>
-            <img className="adegan-art" src={`/art/hero/${view}.jpg`} alt="" aria-hidden="true" />
+            <img className="adegan-latar" src={`/art/adegan/${view}-latar.jpg`} alt="" aria-hidden="true" />
+            <img className="adegan-art" src={`/art/adegan/${view}.webp`} alt="" aria-hidden="true" />
             <div className="adegan-text">
               <span className="adegan-kicker">Enterprise Security Portal</span>
               {view === 'dashboard'
